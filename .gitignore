@@ -1,0 +1,13 @@
+datasets/
+models/
+ConceptSliders/
+
+*.pt
+*.safetensors
+*.pth
+*.ckpt
+*.ptl
+*.pthl
+*.ckptl
+*.ptl
+*.pthl
