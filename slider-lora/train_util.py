@@ -4,8 +4,9 @@ import torch
 
 from transformers import CLIPTextModel, CLIPTokenizer
 from diffusers import UNet2DConditionModel, SchedulerMixin
-
+from diffusers.image_processor import VaeImageProcessor
 from model_util import SDXL_TEXT_ENCODER_TYPE
+from diffusers.utils import randn_tensor
 
 from tqdm import tqdm
 
@@ -171,6 +172,7 @@ def predict_noise(
     return guided_target
 
 
+
 # ref: https://github.com/huggingface/diffusers/blob/0bab447670f47c28df60fbd2f6a0f833f75a16f5/src/diffusers/pipelines/stable_diffusion/pipeline_stable_diffusion.py#L746
 @torch.no_grad()
 def diffusion(
@@ -195,38 +197,42 @@ def diffusion(
     # return latents_steps
     return latents
 
-
 @torch.no_grad()
-def diffusion_with_lora_schedule(
+def get_noisy_image(
+    img,
+    vae,
+    generator,
     unet: UNet2DConditionModel,
     scheduler: SchedulerMixin,
-    latents: torch.FloatTensor,
-    text_embeddings: torch.FloatTensor,
-    start_timesteps: int,
-    total_timesteps: int,
-    network,  # LoRA network with set_lora_slider(scale)
-    lora_start_ratio: float,
-    guidance_scale: float = 3,
+    total_timesteps: int = 1000,
+    start_timesteps=0,
+    
+    **kwargs,
 ):
-    """Like diffusion() but only apply LoRA in the last (1 - lora_start_ratio) of steps. Reduces shortcut (e.g. only affecting early steps)."""
-    steps = list(scheduler.timesteps[start_timesteps:total_timesteps])
-    n_steps = len(steps)
-    switch_i = int(n_steps * lora_start_ratio)
+    # latents_steps = []
+    vae_scale_factor = 2 ** (len(vae.config.block_out_channels) - 1)
+    image_processor = VaeImageProcessor(vae_scale_factor=vae_scale_factor)
 
-    for i, timestep in enumerate(tqdm(steps)):
-        if i >= switch_i:
-            with network:
-                noise_pred = predict_noise(
-                    unet, scheduler, timestep, latents, text_embeddings,
-                    guidance_scale=guidance_scale,
-                )
-        else:
-            noise_pred = predict_noise(
-                unet, scheduler, timestep, latents, text_embeddings,
-                guidance_scale=guidance_scale,
-            )
-        latents = scheduler.step(noise_pred, timestep, latents).prev_sample
-    return latents
+    image = img
+    im_orig = image
+    device = vae.device
+    image = image_processor.preprocess(image).to(device)
+
+    init_latents = vae.encode(image).latent_dist.sample(None)
+    init_latents = vae.config.scaling_factor * init_latents
+
+    init_latents = torch.cat([init_latents], dim=0)
+
+    shape = init_latents.shape
+
+    noise = randn_tensor(shape, generator=generator, device=device)
+
+    time_ = total_timesteps
+    timestep = scheduler.timesteps[time_:time_+1]
+    # get latents
+    init_latents = scheduler.add_noise(init_latents, noise, timestep)
+    
+    return init_latents, noise
 
 
 def rescale_noise_cfg(
@@ -287,7 +293,7 @@ def predict_noise_xl(
 
     # https://github.com/huggingface/diffusers/blob/7a91ea6c2b53f94da930a61ed571364022b21044/src/diffusers/pipelines/stable_diffusion_xl/pipeline_stable_diffusion_xl.py#L775
     noise_pred = rescale_noise_cfg(
-        guided_target, noise_pred_text, guidance_rescale=guidance_rescale
+        noise_pred, noise_pred_text, guidance_rescale=guidance_rescale
     )
 
     return guided_target

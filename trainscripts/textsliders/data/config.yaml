@@ -16,6 +16,11 @@ train:
   optimizer: "AdamW"
   lr_scheduler: "constant"
   max_denoising_steps: 50
+  # Anti-shortcut (set in yaml to enable): lora only in last (1-ratio) of steps, same as inference
+  # lora_start_ratio: 0.4
+  # scale0_reg_prob: 0.2
+  # scale0_reg_weight: 1.0
+  # ortho_reg_weight: 0.0
 save:
   name: "temp"
   path: "./models"

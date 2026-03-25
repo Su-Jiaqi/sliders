@@ -182,7 +182,7 @@ def train(
                 torch.randint(0, len(prompt_pairs), (1,)).item()
             ]
 
-            # 1 ~ 49 からランダム
+            # 1 ~ 49 
             timesteps_to = torch.randint(
                 1, config.train.max_denoising_steps-1, (1,)
 #                 1, 25, (1,)

@@ -1,6 +1,7 @@
 datasets/
 models/
 ConceptSliders/
+logs/
 
 *.pt
 *.safetensors

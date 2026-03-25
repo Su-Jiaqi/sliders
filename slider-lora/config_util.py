@@ -39,14 +39,6 @@ class TrainConfig(BaseModel):
 
     max_denoising_steps: int = 50
 
-    # Anti-shortcut: only apply LoRA in last (1 - lora_start_ratio) of denoising steps (align with inference). 0 = LoRA all steps.
-    lora_start_ratio: float = 0.0
-    # With this prob, do a scale=0 step and add loss so LoRA(scale=0) stays at neutral.
-    scale0_reg_prob: float = 0.0
-    scale0_reg_weight: float = 1.0
-    # Orthogonal reg on LoRA to reduce redundant/shortcut directions (weight, 0 = off).
-    ortho_reg_weight: float = 0.0
-
 
 class SaveConfig(BaseModel):
     name: str = "untitled"
