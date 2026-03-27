@@ -7,12 +7,12 @@
 #   resolution: 512
 #   dynamic_resolution: false
 #   batch_size: 1
-- target: "" # what word for erasing the positive concept from
-  positive: ""  # concept to erase
-  unconditional: "" # word to take the difference from the positive concept
-  neutral: "" # starting point for conditioning the target
-  action: "enhance" # erase or enhance
-  guidance_scale: 1
+- target: ""
+  positive: "post-disaster satellite image, wildfire, burned land, smoke, destroyed buildings, severe damage"
+  unconditional: ""
+  neutral: "pre-disaster satellite image, intact land, intact buildings, no smoke, no fire"
+  action: "enhance"
+  guidance_scale: 2
   resolution: 512
   dynamic_resolution: false
   batch_size: 1
