@@ -1,0 +1,45 @@
+prompts_file: "./configs/prompts_xbd.yaml"
+
+dataset:
+  root: "./../datasets/remote/socalfire"
+  pre_dir: "pre"
+  post_dir: "post"
+  image_size: 256
+  num_workers: 8
+
+pretrained_model:
+  name_or_path: "CompVis/stable-diffusion-v1-4"
+  v2: false
+  v_pred: false
+  clip_skip: null
+
+network:
+  rank: 16
+  alpha: 1.0
+  training_method: "noxattn"
+
+train:
+  precision: "bf16"
+  noise_scheduler: "ddim"
+  iterations: 10000
+  batch_size: 4
+  lr: 1e-5
+  optimizer: "adamw"
+  lr_scheduler: "constant"
+  max_denoising_steps: 50
+  slider_scale: 1.0
+  seed: 42
+
+save:
+  name: "xbd_prepost_slider"
+  path: "./outputs/rank16-new"
+  per_steps: 500
+  precision: "float32"
+
+logging:
+  print_every: 10
+  use_wandb: false
+  verbose: false
+
+other:
+  use_xformers: true

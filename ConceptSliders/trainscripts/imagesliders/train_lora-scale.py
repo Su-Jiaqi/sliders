@@ -48,7 +48,10 @@ def train(
 ):
     scales = np.array(scales)
     folders = np.array(folders)
-    scales_unique = list(scales)
+    scales_unique = sorted(set(int(s) for s in scales.tolist()))
+    paired_scales = sorted({abs(s) for s in scales_unique if s > 0 and -s in scales_unique})
+    if len(paired_scales) == 0:
+        raise ValueError(f"No +/- scale pairs found in scales={scales_unique}")
 
     metadata = {
         "prompts": ",".join([prompt.json() for prompt in prompts]),
@@ -126,6 +129,24 @@ def train(
     cache = PromptEmbedsCache()
     prompt_pairs: list[PromptEmbedsPair] = []
 
+    valid_exts = (".png", ".jpg", ".jpeg", ".webp")
+    paired_files_by_scale: dict[int, list[str]] = {}
+    for scale_value in paired_scales:
+        folder_low = folders[scales == -scale_value][0]
+        folder_high = folders[scales == scale_value][0]
+        ims_low = [
+            im for im in os.listdir(f"{folder_main}/{folder_low}/")
+            if im.lower().endswith(valid_exts)
+        ]
+        ims_high = {
+            im for im in os.listdir(f"{folder_main}/{folder_high}/")
+            if im.lower().endswith(valid_exts)
+        }
+        common_ims = [im for im in ims_low if im in ims_high]
+        if len(common_ims) == 0:
+            raise RuntimeError(f"No paired files found between {folder_low} and {folder_high}")
+        paired_files_by_scale[scale_value] = common_ims
+
     with torch.no_grad():
         for settings in prompts:
             print(settings)
@@ -184,10 +205,10 @@ def train(
             ]
 
             # 1 ~ 49 からランダム
-            timesteps_to = torch.randint(
-                1, config.train.max_denoising_steps-1, (1,)
-#                 1, 25, (1,)
-            ).item()
+            # avoid extremely early/late timesteps, which are usually noisy targets
+            min_step = max(1, int(config.train.max_denoising_steps * 0.2))
+            max_step = max(min_step + 1, int(config.train.max_denoising_steps * 0.8))
+            timesteps_to = torch.randint(min_step, max_step, (1,)).item()
 
             height, width = (
                 prompt_pair.resolution,
@@ -209,25 +230,10 @@ def train(
             
             
             
-            scale_to_look = abs(random.choice(list(scales_unique)))
+            scale_to_look = random.choice(paired_scales)
             folder1 = folders[scales == -scale_to_look][0]
             folder2 = folders[scales == scale_to_look][0]
-
-            valid_exts = (".png", ".jpg", ".jpeg", ".webp")
-            ims1 = [
-                im for im in os.listdir(f"{folder_main}/{folder1}/")
-                if im.lower().endswith(valid_exts)
-            ]
-            ims2 = {
-                im for im in os.listdir(f"{folder_main}/{folder2}/")
-                if im.lower().endswith(valid_exts)
-            }
-
-            common_ims = [im for im in ims1 if im in ims2]
-            if len(common_ims) == 0:
-                raise RuntimeError(f"No paired files found between {folder1} and {folder2}")
-
-            sample_name = random.choice(common_ims)
+            sample_name = random.choice(paired_files_by_scale[scale_to_look])
 
             resize_size = (width, height)
             img1 = Image.open(f"{folder_main}/{folder1}/{sample_name}").convert("RGB").resize(
@@ -294,7 +300,8 @@ def train(
                     guidance_scale=prompt_pair.guidance_scale,
                 ).detach()
         
-        network.set_lora_slider(scale=scale_to_look)
+        action_sign = 1 if prompt_pair.action == "enhance" else -1
+        network.set_lora_slider(scale=action_sign * scale_to_look)
         with network:
             pred_plus_from_low = train_util.predict_noise(
                 unet,
@@ -314,7 +321,7 @@ def train(
             target_high.float(),
         )
 
-        network.set_lora_slider(scale=-scale_to_look)
+        network.set_lora_slider(scale=-action_sign * scale_to_look)
         with network:
             pred_minus_from_high = train_util.predict_noise(
                 unet,
@@ -336,6 +343,7 @@ def train(
 
         total_loss = loss_high + loss_low
         total_loss.backward()
+        torch.nn.utils.clip_grad_norm_(network.parameters(), max_norm=1.0)
 
         optimizer.step()
         lr_scheduler.step()

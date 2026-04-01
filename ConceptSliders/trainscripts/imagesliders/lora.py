@@ -13,7 +13,7 @@ from safetensors.torch import save_file
 
 
 UNET_TARGET_REPLACE_MODULE_TRANSFORMER = [
-#     "Transformer2DModel",  # どうやらこっちの方らしい？ # attn1, 2
+#     "Transformer2DModel",  
     "Attention"
 ]
 UNET_TARGET_REPLACE_MODULE_CONV = [
@@ -126,10 +126,10 @@ class LoRANetwork(nn.Module):
         self.lora_dim = rank
         self.alpha = alpha
 
-        # LoRAのみ
+        # LoRA
         self.module = LoRAModule
 
-        # unetのloraを作る
+        # unet
         self.unet_loras = self.create_modules(
             LORA_PREFIX_UNET,
             unet,
@@ -140,7 +140,7 @@ class LoRANetwork(nn.Module):
         )
         print(f"create LoRA for U-Net: {len(self.unet_loras)} modules.")
 
-        # assertion 名前の被りがないか確認しているようだ
+        # assertion 
         lora_names = set()
         for lora in self.unet_loras:
             assert (
@@ -148,7 +148,7 @@ class LoRANetwork(nn.Module):
             ), f"duplicated lora name: {lora.lora_name}. {lora_names}"
             lora_names.add(lora.lora_name)
 
-        # 適用する
+        #
         for lora in self.unet_loras:
             lora.apply_to()
             self.add_module(

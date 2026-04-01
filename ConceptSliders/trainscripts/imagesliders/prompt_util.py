@@ -29,7 +29,10 @@ PROMPT_EMBEDDING = Union[torch.FloatTensor, PromptEmbedsXL]
 
 
 class PromptEmbedsCache:  # 使いまわしたいので
-    prompts: dict[str, PROMPT_EMBEDDING] = {}
+    prompts: dict[str, PROMPT_EMBEDDING]
+
+    def __init__(self) -> None:
+        self.prompts = {}
 
     def __setitem__(self, __name: str, __value: PROMPT_EMBEDDING) -> None:
         self.prompts[__name] = __value
