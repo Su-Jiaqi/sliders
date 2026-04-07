@@ -10,19 +10,18 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 
-from config import load_config_from_yaml, parse_precision
+from config import load_config_from_yaml, parse_precision, project_root
 from dataset_xbd import XBDPairDataset
 from diffusion_utils import (
     load_sd_components,
     create_noise_scheduler,
     encode_prompt,
-    concat_embeddings,
     encode_images_to_latents,
     predict_noise,
     get_optimizer,
     get_lr_scheduler,
 )
-from lora_stable import LoRANetwork
+from lora import LoRANetwork
 from prompt_utils import load_prompts_from_yaml
 
 
@@ -77,7 +76,12 @@ def load_sd_components_local_first(model_id: str, weight_dtype: torch.dtype):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="train/configs/xbd_slider.yaml",
+        help="Config YAML path (relative to repo root if not absolute).",
+    )
     parser.add_argument("--device", type=str, default="cuda:0")
     parser.add_argument("--alpha", type=float, default=None)
     parser.add_argument("--rank", type=int, default=None)
@@ -86,6 +90,10 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config_from_yaml(args.config)
+    print(f"[paths] repo_root={project_root()}")
+    print(f"[paths] prompts_file={cfg.prompts_file}")
+    print(f"[paths] dataset.root={cfg.dataset.root}")
+    print(f"[paths] save.path={cfg.save.path}")
     if args.alpha is not None:
         cfg.network.alpha = args.alpha
     if args.rank is not None:
@@ -212,14 +220,24 @@ def main():
             noisy_pre = scheduler.add_noise(pre_latents, noise, timesteps)
             noisy_post = scheduler.add_noise(post_latents, noise, timesteps)
 
-        emb_post = torch.cat([
-            repeat_embed(prompt_uncond, batch_size),
-            repeat_embed(prompt_post, batch_size),
-        ], dim=0)
-        emb_pre = torch.cat([
-            repeat_embed(prompt_uncond, batch_size),
-            repeat_embed(prompt_pre, batch_size),
-        ], dim=0)
+        if guidance_scale == 1.0:
+            emb_post = repeat_embed(prompt_post, batch_size)
+            emb_pre = repeat_embed(prompt_pre, batch_size)
+        else:
+            emb_post = torch.cat(
+                [
+                    repeat_embed(prompt_uncond, batch_size),
+                    repeat_embed(prompt_post, batch_size),
+                ],
+                dim=0,
+            )
+            emb_pre = torch.cat(
+                [
+                    repeat_embed(prompt_uncond, batch_size),
+                    repeat_embed(prompt_pre, batch_size),
+                ],
+                dim=0,
+            )
 
         network.set_lora_slider(float(cfg.train.slider_scale))
         with network:

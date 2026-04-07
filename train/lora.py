@@ -63,7 +63,7 @@ class LoRAModule(nn.Module):
         nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_up.weight)
 
-        self.multiplier = multiplier
+        self.multiplier = float(multiplier)
         self.org_module = org_module
 
     def apply_to(self):
@@ -72,7 +72,6 @@ class LoRAModule(nn.Module):
         del self.org_module
 
     def forward(self, x):
-        # Keep the frozen UNet on bf16/fp16 if desired, but train LoRA in fp32.
         base = self.org_forward(x)
         lora_dtype = self.lora_down.weight.dtype
         delta = self.lora_up(self.lora_down(x.to(dtype=lora_dtype)))
@@ -89,10 +88,11 @@ class LoRANetwork(nn.Module):
         alpha: float = 1.0,
         train_method: TRAINING_METHODS = "noxattn",
         use_conv_lora: bool = True,
+        include_conv_in: bool = False,
     ):
         super().__init__()
         self.lora_scale = 1.0
-        self.multiplier = multiplier
+        self.multiplier = float(multiplier)
         self.rank = rank
         self.alpha = alpha
 
@@ -105,9 +105,22 @@ class LoRANetwork(nn.Module):
             root_module=unet,
             target_replace_modules=target_modules,
             rank=rank,
-            multiplier=multiplier,
+            multiplier=self.multiplier,
             train_method=train_method,
         )
+
+        if include_conv_in:
+            conv_in = unet.conv_in
+            conv_lora_name = f"{LORA_PREFIX_UNET}_conv_in"
+            self.unet_loras.append(
+                LoRAModule(
+                    lora_name=conv_lora_name,
+                    org_module=conv_in,
+                    multiplier=self.multiplier,
+                    lora_dim=rank,
+                    alpha=alpha,
+                )
+            )
 
         print(f"Created {len(self.unet_loras)} LoRA modules.")
 
@@ -180,16 +193,23 @@ class LoRANetwork(nn.Module):
             params.extend(list(lora.parameters()))
         return [{"params": params}]
 
+    def set_multiplier(self, multiplier: float):
+        self.multiplier = float(multiplier)
+        for lora in self.unet_loras:
+            lora.multiplier = self.multiplier
+
     def set_lora_slider(self, scale: float):
-        self.lora_scale = scale
+        self.lora_scale = float(scale)
 
     def __enter__(self):
         for lora in self.unet_loras:
-            lora.multiplier = self.lora_scale
+            lora.multiplier = self.multiplier * self.lora_scale
+        return self
 
     def __exit__(self, exc_type, exc_value, tb):
         for lora in self.unet_loras:
             lora.multiplier = 0.0
+        return False
 
     def save_weights(self, file: str, dtype=None, metadata: Optional[dict] = None):
         state_dict = self.state_dict()

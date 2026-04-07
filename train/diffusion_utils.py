@@ -85,7 +85,6 @@ def encode_prompt(
     ).input_ids.to(device)
 
     embeds = text_encoder(tokens)[0]
-    # 显式对齐到 text_encoder 当前 dtype
     embeds = embeds.to(device=device, dtype=text_encoder.dtype)
     return embeds
 
@@ -98,10 +97,10 @@ def concat_embeddings(
     """
     [1, seq, dim] + [1, seq, dim] -> [2*B, seq, dim]
 
-    结果顺序是：
+    顺序:
     [uncond x B, cond x B]
-    与下面的 latent_model_input = [latents, latents] 对应，
-    这样 noise_pred.chunk(2) 时前半是 uncond，后半是 cond。
+
+    仅在真正需要 CFG (guidance_scale != 1.0) 时使用。
     """
     return torch.cat([unconditional, conditional], dim=0).repeat_interleave(batch_size, dim=0)
 
@@ -123,7 +122,13 @@ def _expand_timestep(
     device: torch.device,
 ):
     """
-    把 scheduler 的单个 timestep 统一整理成 [batch] 的 long tensor
+    把 timestep 整理成 [batch_size] 的 long tensor。
+    支持三种输入：
+    1. 标量 / 单个 int
+    2. [1]
+    3. [B]
+
+    如果传入的是 [B]，则要求 B == batch_size。
     """
     if not torch.is_tensor(timestep):
         timestep = torch.tensor([timestep], device=device, dtype=torch.long)
@@ -135,6 +140,10 @@ def _expand_timestep(
 
     if timestep.shape[0] == 1 and batch_size > 1:
         timestep = timestep.expand(batch_size)
+    elif timestep.shape[0] != batch_size:
+        raise ValueError(
+            f"timestep batch mismatch: got {timestep.shape[0]}, expected {batch_size}"
+        )
 
     return timestep.long()
 
@@ -163,11 +172,19 @@ def predict_noise(
     guidance_scale: float = 1.0,
 ):
     """
-    关键修复点：
-    1. noisy_latents 显式 cast 到 unet 参数 dtype
-    2. text_embeddings 显式 cast 到 unet 参数 dtype
-    3. scheduler.scale_model_input 后再 cast 一次，防止被升回 float32
-    4. timestep 展开到 batch 维
+    训练/推理通用的噪声预测函数。
+
+    规则：
+    1. guidance_scale == 1.0 时，不做 CFG 双分支
+       - latent: [B, ...]
+       - timestep: [B]
+       - text_embeddings: [B, seq, dim]
+
+    2. guidance_scale != 1.0 时，做 CFG
+       - latent: [2B, ...]
+       - timestep: [2B]
+       - text_embeddings: [2B, seq, dim]
+         顺序必须是 [uncond x B, cond x B]
     """
     model_param = next(unet.parameters())
     model_device = model_param.device
@@ -178,17 +195,54 @@ def predict_noise(
     noisy_latents = noisy_latents.to(device=model_device, dtype=model_dtype)
     text_embeddings = text_embeddings.to(device=model_device, dtype=model_dtype)
 
-    latent_model_input = torch.cat([noisy_latents, noisy_latents], dim=0)
+    # 情况 1：不做 CFG
+    if guidance_scale == 1.0:
+        model_timesteps = _expand_timestep(
+            timestep=timestep,
+            batch_size=batch_size,
+            device=model_device,
+        )
 
-    model_timesteps = _expand_timestep(
+        if text_embeddings.shape[0] != batch_size:
+            raise ValueError(
+                "When guidance_scale == 1.0, text_embeddings must have shape "
+                f"[B, seq, dim]. Got batch={text_embeddings.shape[0]}, expected {batch_size}."
+            )
+
+        latent_model_input = scheduler.scale_model_input(noisy_latents, model_timesteps)
+        latent_model_input = latent_model_input.to(device=model_device, dtype=model_dtype)
+
+        noise_pred = unet(
+            latent_model_input,
+            model_timesteps,
+            encoder_hidden_states=text_embeddings,
+        ).sample
+
+        return noise_pred
+
+    # 情况 2：做 CFG
+    if text_embeddings.shape[0] == batch_size:
+        raise ValueError(
+            "CFG requires text_embeddings to contain both unconditional and conditional branches. "
+            f"Expected batch={2 * batch_size}, got {batch_size}."
+        )
+
+    if text_embeddings.shape[0] != 2 * batch_size:
+        raise ValueError(
+            "CFG text_embeddings batch mismatch: "
+            f"got {text_embeddings.shape[0]}, expected {2 * batch_size}."
+        )
+
+    base_timesteps = _expand_timestep(
         timestep=timestep,
-        batch_size=latent_model_input.shape[0],
+        batch_size=batch_size,
         device=model_device,
     )
 
-    latent_model_input = scheduler.scale_model_input(latent_model_input, model_timesteps)
+    latent_model_input = torch.cat([noisy_latents, noisy_latents], dim=0)
+    model_timesteps = torch.cat([base_timesteps, base_timesteps], dim=0)
 
-    # 有些 scheduler 会把 dtype 变回 float32，所以这里再强制一次
+    latent_model_input = scheduler.scale_model_input(latent_model_input, model_timesteps)
     latent_model_input = latent_model_input.to(device=model_device, dtype=model_dtype)
 
     noise_pred = unet(
@@ -197,7 +251,7 @@ def predict_noise(
         encoder_hidden_states=text_embeddings,
     ).sample
 
-    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2, dim=0)
     guided = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
     return guided
 
@@ -228,3 +282,140 @@ def get_lr_scheduler(name: Optional[str], optimizer, max_iterations: int, lr_min
             total_iters=max(1, max_iterations // 10),
         )
     raise ValueError(f"Unsupported lr scheduler: {name}")
+
+
+import torch
+import torch.nn as nn
+
+def replace_unet_conv_in_to_9ch(unet, new_in_channels: int = 9):
+    """
+    把 Stable Diffusion v1.x 的 UNet conv_in 从 4 通道改为 9 通道。
+    安全初始化：
+      - 复制旧 conv_in 的前 4 通道权重到新 conv_in 的前 4 通道
+      - 新增的 5 个通道权重全部置 0（不破坏原模型行为）
+    """
+    old = unet.conv_in
+    if old.in_channels == new_in_channels:
+        return unet
+
+    if old.in_channels != 4:
+        raise ValueError(f"Expected old conv_in.in_channels=4, got {old.in_channels}")
+
+    new = nn.Conv2d(
+        in_channels=new_in_channels,
+        out_channels=old.out_channels,
+        kernel_size=old.kernel_size,
+        stride=old.stride,
+        padding=old.padding,
+        bias=(old.bias is not None),
+    )
+
+    # 保持 dtype/device 一致
+    new = new.to(device=old.weight.device, dtype=old.weight.dtype)
+
+    with torch.no_grad():
+        new.weight.zero_()
+        new.weight[:, :4, :, :].copy_(old.weight)  # copy 4ch
+        if old.bias is not None:
+            new.bias.copy_(old.bias)
+
+    unet.conv_in = new
+
+    # 尝试更新 config（不同 diffusers 版本可能写法不同；失败也无妨）
+    if hasattr(unet, "register_to_config"):
+        try:
+            unet.register_to_config(in_channels=new_in_channels)
+        except Exception:
+            pass
+
+    return unet
+
+def replace_unet_conv_in_to_9ch(unet: UNet2DConditionModel, new_in_channels: int = 9) -> UNet2DConditionModel:
+    """
+    Replace UNet conv_in from 4->9 input channels (noisy_target 4ch + pre 4ch + s_map 1ch).
+
+    Safe init:
+      - Copy old weights for the first 4 channels.
+      - Zero-init the remaining 5 channels.
+    """
+    import torch.nn as nn
+
+    old = unet.conv_in
+    if old.in_channels == new_in_channels:
+        return unet
+    if old.in_channels != 4:
+        raise ValueError(f"Expected old conv_in.in_channels=4, got {old.in_channels}")
+
+    new = nn.Conv2d(
+        in_channels=new_in_channels,
+        out_channels=old.out_channels,
+        kernel_size=old.kernel_size,
+        stride=old.stride,
+        padding=old.padding,
+        bias=(old.bias is not None),
+    ).to(device=old.weight.device, dtype=old.weight.dtype)
+
+    with torch.no_grad():
+        new.weight.zero_()
+        new.weight[:, :4].copy_(old.weight)
+        if old.bias is not None:
+            new.bias.copy_(old.bias)
+
+    unet.conv_in = new
+
+    if hasattr(unet, "register_to_config"):
+        try:
+            unet.register_to_config(in_channels=new_in_channels)
+        except Exception:
+            pass
+
+    return unet
+
+
+def predict_noise_conditional(
+    unet: UNet2DConditionModel,
+    scheduler,
+    timestep: torch.Tensor,
+    noisy_target_latents: torch.FloatTensor,  # [B,4,H,W]
+    pre_latents: torch.FloatTensor,           # [B,4,H,W]
+    s: torch.FloatTensor,                     # [B]
+    text_embeddings: torch.FloatTensor,
+    guidance_scale: float = 1.0,
+):
+    """
+    Conditional epsilon prediction with 9-channel UNet input:
+      model_input = concat([noisy_target(4), pre_latents(4), s_map(1)])  -> [B,9,H,W]
+
+    CFG rules mirror predict_noise():
+      - guidance_scale==1: text_embeddings must be [B, seq, dim]
+      - guidance_scale!=1: text_embeddings must be [2B, seq, dim] in [uncond x B, cond x B] order
+    """
+    model_param = next(unet.parameters())
+    model_device = model_param.device
+    model_dtype = model_param.dtype
+
+    B, _, H, W = noisy_target_latents.shape
+    s_map = s.view(B, 1, 1, 1).expand(B, 1, H, W)
+
+    x = torch.cat([noisy_target_latents, pre_latents, s_map], dim=1)
+    x = x.to(device=model_device, dtype=model_dtype)
+    text_embeddings = text_embeddings.to(device=model_device, dtype=model_dtype)
+
+    if guidance_scale == 1.0:
+        model_timesteps = _expand_timestep(timestep, B, model_device)
+        if text_embeddings.shape[0] != B:
+            raise ValueError(f"text_embeddings must be [B,...]. Got {text_embeddings.shape[0]} vs {B}.")
+        x_in = scheduler.scale_model_input(x, model_timesteps).to(device=model_device, dtype=model_dtype)
+        return unet(x_in, model_timesteps, encoder_hidden_states=text_embeddings).sample
+
+    if text_embeddings.shape[0] != 2 * B:
+        raise ValueError(f"CFG requires text_embeddings batch=2B, got {text_embeddings.shape[0]} vs {2*B}.")
+
+    base_timesteps = _expand_timestep(timestep, B, model_device)
+    x2 = torch.cat([x, x], dim=0)
+    t2 = torch.cat([base_timesteps, base_timesteps], dim=0)
+    x2 = scheduler.scale_model_input(x2, t2).to(device=model_device, dtype=model_dtype)
+
+    noise_pred = unet(x2, t2, encoder_hidden_states=text_embeddings).sample
+    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2, dim=0)
+    return noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
