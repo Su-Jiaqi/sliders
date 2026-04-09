@@ -14,32 +14,36 @@ pretrained_model:
   clip_skip: null
 
 network:
-  rank: 4
-  alpha: 1.0
+  rank: 16
+  alpha: 16.0
   training_method: "full"
 
 train:
   precision: "bf16"
   noise_scheduler: "ddim"
-  iterations: 5000
+  iterations: 15000
   batch_size: 1
-  lr: 1e-5
+  lr: 5e-5
   optimizer: "adamw"
   lr_scheduler: "constant"
   seed: 42
 
-  min_timestep: 200
-  max_timestep: 600
+  min_timestep: 50
+  max_timestep: 300
 
-  s_warmup_steps: 800
-  s_endpoint_prob: 0.7
+  s_warmup_steps: 3000
+  s_endpoint_prob: 0.9
 
-  x0_loss_weight: 0.0
-  smoothness_weight: 0.0
+  x0_loss_weight: 0.5
+  smoothness_weight: 0.25
   smoothness_delta: 0.05
 
+  img_endpoint_loss_weight: 1.0
+  img_loss_type: "l1"
+  img_loss_start_step: 0
+
 save:
-  name: "xbd_paired_slider_overfit4"
+  name: "xbd_paired_slider_endpoint"
   path: output-models
   per_steps: 500
   precision: "float32"

@@ -14,9 +14,15 @@ from torchvision import datasets, transforms, models
 # =======================
 # 默认参数（你可以不传命令行）
 # =======================
-DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/datasets/aug/generate/train"
-DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/datasets/aug/generate/test"
-DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/outputs/prepost_cls_generate"
+# DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/datasets/aug/generate/train"
+# DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/datasets/aug/generate/test"
+# DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/outputs/prepost_cls_generate"
+# DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/datasets/remote/socalfire"
+# DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/datasets/remote/socalfire/test"
+# DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_xbd"
+DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/outputs/refined/socalfire-train/prepared-classifier-2"
+DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/outputs/refined/socalfire-test/prepared-classifier-2"
+DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_generated-2"
 
 DEFAULT_ARCH = "mobilenet_v3_small"  # or resnet18
 DEFAULT_IMG_SIZE = 224
@@ -107,17 +113,23 @@ def make_fixed_class_dataset(root_dir: str, transform):
     ds = datasets.ImageFolder(root_dir, transform=transform)
 
     classes = set(ds.class_to_idx.keys())
-    if classes != {"pre", "post"}:
-        raise ValueError(f"Expected subfolders {{'pre','post'}}, got {ds.class_to_idx}")
+    required = {"pre", "post"}
+    if not required.issubset(classes):
+        raise ValueError(
+            f"Expected to find subfolders 'pre' and 'post', got {ds.class_to_idx}"
+        )
 
     ds.class_to_idx = {"pre": 0, "post": 1}
     new_samples = []
     for path, _ in ds.samples:
         cls_name = os.path.basename(os.path.dirname(path))
+        if cls_name not in required:
+            continue
         new_label = ds.class_to_idx[cls_name]
         new_samples.append((path, new_label))
 
     ds.samples = new_samples
+    ds.imgs = new_samples
     ds.targets = [y for _, y in new_samples]
     return ds
 

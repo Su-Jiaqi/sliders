@@ -102,6 +102,10 @@ class TrainConfig(BaseModel):
     smoothness_weight: float = Field(default=0.0, ge=0.0)
     smoothness_delta: float = Field(default=0.05, ge=0.0, le=1.0)
 
+    img_endpoint_loss_weight: float = Field(default=1.0, ge=0.0)
+    img_loss_type: Literal["l1", "l2"] = "l1"
+    img_loss_start_step: int = 0
+
 
 class SaveConfig(BaseModel):
     if _HAS_CONFIGDICT:

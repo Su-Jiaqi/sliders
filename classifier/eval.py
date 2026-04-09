@@ -10,13 +10,18 @@ from torchvision import datasets, transforms, models
 # 默认参数（不传参数也能跑）
 # =========================
 DEFAULT_GPU = 2
-
-DEFAULT_CKPT = "/home/sjq/concept_sliders/outputs/prepost_cls_generate/best.pt"
-DEFAULT_DATA_DIR = "/home/sjq/concept_sliders/datasets/aug/xbd/test"
-
 DEFAULT_BATCH_SIZE = 32
-DEFAULT_SAVE_CSV = "/home/sjq/concept_sliders/results/generate-aug_test_results.csv"
 
+# DEFAULT_CKPT = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_xbd/best.pt"
+DEFAULT_DATA_DIR = "/home/sjq/concept_sliders/outputs/refined/socalfire-test/prepared-classifier-2"
+# DEFAULT_SAVE_CSV = "/home/sjq/concept_sliders/outputs/classifier/xbd-generated_test-2.csv"
+
+DEFAULT_CKPT = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_generated-2/best.pt"
+# DEFAULT_DATA_DIR = "/home/sjq/concept_sliders/datasets/remote/socalfire/test"
+# DEFAULT_SAVE_CSV = "/home/sjq/concept_sliders/outputs/classifier/generated-xbd_test-2.csv"
+
+DEFAULT_SAVE_CSV = "/home/sjq/concept_sliders/outputs/classifier/generated-test-2.csv"
+# DEFAULT_SAVE_CSV = "/home/sjq/concept_sliders/outputs/classifier/xbd=test.csv"
 
 def build_model(arch: str, num_classes: int):
     if arch == "resnet18":
