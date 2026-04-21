@@ -6,27 +6,20 @@ import math
 import random
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
-from torchvision import models, transforms
+from torchvision import transforms
 from tqdm import tqdm
 
 import lpips
 
 
 VALID_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
-
-DEFAULT_PRE_DIR = "datasets/remote/socalfire/pre"
-DEFAULT_POST_DIR = "datasets/remote/socalfire/post"
-DEFAULT_SCALE1_DIR = "outputs/infer/rk16alpha16/scale1"
-DEFAULT_SAVE_DIR = "output-models/refine/scale1_only_refiner_stronger"
-DEFAULT_OUTPUT_DIR = "outputs/refined/socalfire-train/scale1_only_refiner_stronger"
-DEFAULT_CLASSIFIER_CKPT = "output-models/classifier/socalfire/socalfire_cls_xbd/best.pt"
 
 
 def set_seed(seed: int):
@@ -71,8 +64,7 @@ def tensor_to_pil_rgb(x: torch.Tensor) -> Image.Image:
 @dataclass
 class TrainConfig:
     pre_dir: str
-    post_dir: str
-    scale1_dir: str
+    scale0_dir: str
     save_dir: str
 
     image_size: int = 256
@@ -85,42 +77,31 @@ class TrainConfig:
     val_ratio: float = 0.1
 
     base_channels: int = 64
-
-    residual_scale: float = 1.00
-
-    lambda_lpips: float = 0.40
-    lambda_res: float = 5e-4
-    lambda_tv: float = 5e-4
-
-    lambda_cls: float = 0.50
-    lambda_feat: float = 0.10
-    classifier_checkpoint: Optional[str] = DEFAULT_CLASSIFIER_CKPT
-    classifier_arch: str = "mobilenet_v3_small"
-    classifier_num_classes: int = 2
-    classifier_target_label: int = 1
-    classifier_image_size: int = 224
+    residual_scale: float = 0.80
+    lambda_lpips: float = 0.30
+    lambda_res: float = 0.001
+    lambda_tv: float = 0.001
 
     precision: str = "bf16"
     lpips_backbone: str = "alex"
 
 
-class Scale1ToPostDataset(Dataset):
+class Scale0ToPreDataset(Dataset):
     """
-    input = [scale1_gen(3), pre(3)] => 6 channels
-    target = post(3)
+    input = [scale0_gen(3), pre(3)] => 6 channels
+    target = pre(3)
     """
+
     def __init__(
         self,
         stems: List[str],
         pre_map: Dict[str, Path],
-        post_map: Dict[str, Path],
-        scale1_map: Dict[str, Path],
+        scale0_map: Dict[str, Path],
         image_size: int = 256,
     ):
         self.stems = stems
         self.pre_map = pre_map
-        self.post_map = post_map
-        self.scale1_map = scale1_map
+        self.scale0_map = scale0_map
         self.image_size = image_size
 
     def __len__(self):
@@ -129,15 +110,13 @@ class Scale1ToPostDataset(Dataset):
     def __getitem__(self, idx):
         stem = self.stems[idx]
         pre = load_rgb(self.pre_map[stem], self.image_size)
-        gen = load_rgb(self.scale1_map[stem], self.image_size)
-        post = load_rgb(self.post_map[stem], self.image_size)
-
+        gen = load_rgb(self.scale0_map[stem], self.image_size)
         x = torch.cat([gen, pre], dim=0)
         return {
             "x": x,
             "gen": gen,
             "pre": pre,
-            "target": post,
+            "target": pre,
             "stem": stem,
         }
 
@@ -205,12 +184,8 @@ class Up(nn.Module):
         return self.conv(x)
 
 
-class Scale1RefinerUNet(nn.Module):
-    """
-    input: [gen1(3), pre(3)] => 6 channels
-    output: refined RGB + residual RGB
-    """
-    def __init__(self, in_ch: int = 6, base_ch: int = 64, residual_scale: float = 1.00):
+class Scale0RefinerUNet(nn.Module):
+    def __init__(self, in_ch: int = 6, base_ch: int = 64, residual_scale: float = 0.80):
         super().__init__()
         self.residual_scale = residual_scale
 
@@ -254,183 +229,30 @@ def get_amp_dtype(precision: str):
 
 def build_datasets(cfg: TrainConfig):
     pre_dir = resolve_path(cfg.pre_dir)
-    post_dir = resolve_path(cfg.post_dir)
-    scale1_dir = resolve_path(cfg.scale1_dir)
+    scale0_dir = resolve_path(cfg.scale0_dir)
 
     pre_map = list_image_map(pre_dir)
-    post_map = list_image_map(post_dir)
-    scale1_map = list_image_map(scale1_dir)
+    scale0_map = list_image_map(scale0_dir)
 
-    common = sorted(set(pre_map) & set(post_map) & set(scale1_map))
+    common = sorted(set(pre_map) & set(scale0_map))
     if not common:
-        raise ValueError("No common image stems found across pre/post/scale1.")
+        raise ValueError("No common image stems found across pre/scale0.")
 
     train_ids, val_ids = split_ids(common, cfg.val_ratio, cfg.seed)
 
-    train_ds = Scale1ToPostDataset(
+    train_ds = Scale0ToPreDataset(
         stems=train_ids,
         pre_map=pre_map,
-        post_map=post_map,
-        scale1_map=scale1_map,
+        scale0_map=scale0_map,
         image_size=cfg.image_size,
     )
-    val_ds = Scale1ToPostDataset(
+    val_ds = Scale0ToPreDataset(
         stems=val_ids,
         pre_map=pre_map,
-        post_map=post_map,
-        scale1_map=scale1_map,
+        scale0_map=scale0_map,
         image_size=cfg.image_size,
     )
     return train_ds, val_ds, common
-
-
-# ----------------------------
-# Classifier helpers
-# ----------------------------
-
-def build_classifier(arch: str, num_classes: int) -> nn.Module:
-    if arch == "mobilenet_v3_small":
-        model = models.mobilenet_v3_small(weights=None)
-        in_features = model.classifier[-1].in_features
-        model.classifier[-1] = nn.Linear(in_features, num_classes)
-        return model
-    elif arch == "resnet18":
-        model = models.resnet18(weights=None)
-        in_features = model.fc.in_features
-        model.fc = nn.Linear(in_features, num_classes)
-        return model
-    else:
-        raise ValueError(f"Unsupported classifier_arch: {arch}")
-
-
-def strip_module_prefix(state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-    out = {}
-    for k, v in state_dict.items():
-        if k.startswith("module."):
-            out[k[len("module."):]] = v
-        else:
-            out[k] = v
-    return out
-
-
-def looks_like_state_dict(d: Dict) -> bool:
-    if not isinstance(d, dict) or len(d) == 0:
-        return False
-    tensor_like = 0
-    for _, v in d.items():
-        if torch.is_tensor(v):
-            tensor_like += 1
-    return tensor_like > 0 and tensor_like == len(d)
-
-
-def extract_state_dict(raw_ckpt):
-    """
-    Robustly extract model weights from common checkpoint formats.
-    Handles:
-      - pure state_dict
-      - {"model": ...}
-      - {"state_dict": ...}
-      - {"model_state_dict": ...}
-      - {"model_state": ...}
-      - {"net": ...}
-      - {"classifier": ...}
-    """
-    if looks_like_state_dict(raw_ckpt):
-        return strip_module_prefix(raw_ckpt)
-
-    if isinstance(raw_ckpt, dict):
-        for key in ["model_state", "model", "state_dict", "model_state_dict", "net", "classifier"]:
-            if key in raw_ckpt and looks_like_state_dict(raw_ckpt[key]):
-                return strip_module_prefix(raw_ckpt[key])
-
-    raise ValueError(
-        "Could not extract classifier state_dict from checkpoint. "
-        "Expected a pure state_dict or one of keys: "
-        "model_state/model/state_dict/model_state_dict/net/classifier."
-    )
-
-
-def validate_classifier_load(msg, model: nn.Module):
-    total_keys = len(model.state_dict())
-    missing = len(msg.missing_keys)
-    unexpected = len(msg.unexpected_keys)
-
-    # allow tiny mismatch, but reject obviously broken loads
-    if missing > max(5, int(0.05 * total_keys)) or unexpected > 5:
-        raise RuntimeError(
-            f"Classifier checkpoint load looks wrong: missing={missing}, unexpected={unexpected}. "
-            f"Missing keys sample: {msg.missing_keys[:10]}. "
-            f"Unexpected keys sample: {msg.unexpected_keys[:10]}"
-        )
-
-
-def load_classifier_checkpoint(
-    checkpoint_path: str,
-    arch: str,
-    num_classes: int,
-    device: torch.device,
-) -> nn.Module:
-    checkpoint_path = str(resolve_path(checkpoint_path))
-    model = build_classifier(arch, num_classes)
-
-    raw = torch.load(checkpoint_path, map_location="cpu")
-    state_dict = extract_state_dict(raw)
-
-    msg = model.load_state_dict(state_dict, strict=False)
-    print(f"[Classifier] load_state_dict -> missing={len(msg.missing_keys)}, unexpected={len(msg.unexpected_keys)}")
-    if len(msg.missing_keys) > 0:
-        print(f"[Classifier] missing keys (first 10): {msg.missing_keys[:10]}")
-    if len(msg.unexpected_keys) > 0:
-        print(f"[Classifier] unexpected keys (first 10): {msg.unexpected_keys[:10]}")
-
-    validate_classifier_load(msg, model)
-
-    model.to(device)
-    model.eval()
-    for p in model.parameters():
-        p.requires_grad_(False)
-    return model
-
-
-def preprocess_for_classifier(x: torch.Tensor, image_size: int) -> torch.Tensor:
-    """
-    x: [-1, 1]
-    return: ImageNet normalized tensor for torchvision classifiers
-    """
-    x = (x + 1.0) * 0.5
-    x = x.clamp(0.0, 1.0)
-    x = F.interpolate(x, size=(image_size, image_size), mode="bilinear", align_corners=False)
-
-    mean = torch.tensor([0.485, 0.456, 0.406], device=x.device, dtype=x.dtype).view(1, 3, 1, 1)
-    std = torch.tensor([0.229, 0.224, 0.225], device=x.device, dtype=x.dtype).view(1, 3, 1, 1)
-    x = (x - mean) / std
-    return x
-
-
-def classifier_forward_with_features(model: nn.Module, x: torch.Tensor, arch: str):
-    if arch == "mobilenet_v3_small":
-        feat = model.features(x)
-        feat = model.avgpool(feat)
-        feat = torch.flatten(feat, 1)
-        logits = model.classifier(feat)
-        return logits, feat
-    elif arch == "resnet18":
-        x = model.conv1(x)
-        x = model.bn1(x)
-        x = model.relu(x)
-        x = model.maxpool(x)
-
-        x = model.layer1(x)
-        x = model.layer2(x)
-        x = model.layer3(x)
-        feat_map = model.layer4(x)
-
-        feat = model.avgpool(feat_map)
-        feat = torch.flatten(feat, 1)
-        logits = model.fc(feat)
-        return logits, feat
-    else:
-        raise ValueError(f"Unsupported classifier_arch: {arch}")
 
 
 def compute_losses(
@@ -438,57 +260,22 @@ def compute_losses(
     residual: torch.Tensor,
     target: torch.Tensor,
     lpips_model: nn.Module,
-    classifier_model: Optional[nn.Module],
-    cfg: TrainConfig,
+    lambda_lpips: float,
+    lambda_res: float,
+    lambda_tv: float,
 ):
     refined_f = refined.float()
     target_f = target.float()
 
     loss_rec = F.l1_loss(refined_f, target_f)
     loss_lpips = lpips_model(refined_f, target_f).mean()
+    loss_res = residual.abs().mean() * lambda_res
+    loss_tv = tv_loss(residual) * lambda_tv
 
-    loss_res = residual.abs().mean() * cfg.lambda_res
-    loss_tv = tv_loss(residual) * cfg.lambda_tv
-
-    loss_cls_raw = torch.tensor(0.0, device=refined.device)
-    loss_feat_raw = torch.tensor(0.0, device=refined.device)
-
-    if classifier_model is not None and (cfg.lambda_cls > 0 or cfg.lambda_feat > 0):
-        refined_in = preprocess_for_classifier(refined_f, cfg.classifier_image_size)
-        target_in = preprocess_for_classifier(target_f, cfg.classifier_image_size)
-
-        logits_refined, feat_refined = classifier_forward_with_features(
-            classifier_model, refined_in, cfg.classifier_arch
-        )
-
-        target_label = torch.full(
-            (refined.size(0),),
-            int(cfg.classifier_target_label),
-            device=refined.device,
-            dtype=torch.long,
-        )
-        loss_cls_raw = F.cross_entropy(logits_refined, target_label)
-
-        with torch.no_grad():
-            _, feat_target = classifier_forward_with_features(
-                classifier_model, target_in, cfg.classifier_arch
-            )
-        loss_feat_raw = F.l1_loss(feat_refined, feat_target)
-
-    total = (
-        loss_rec
-        + cfg.lambda_lpips * loss_lpips
-        + cfg.lambda_cls * loss_cls_raw
-        + cfg.lambda_feat * loss_feat_raw
-        + loss_res
-        + loss_tv
-    )
-
+    total = loss_rec + lambda_lpips * loss_lpips + loss_res + loss_tv
     return total, {
         "loss_rec": float(loss_rec.detach().cpu()),
         "loss_lpips": float(loss_lpips.detach().cpu()),
-        "loss_cls": float(loss_cls_raw.detach().cpu()),
-        "loss_feat": float(loss_feat_raw.detach().cpu()),
         "loss_res": float(loss_res.detach().cpu()),
         "loss_tv": float(loss_tv.detach().cpu()),
     }
@@ -498,7 +285,6 @@ def compute_losses(
 def run_eval(
     model: nn.Module,
     lpips_model: nn.Module,
-    classifier_model: Optional[nn.Module],
     loader: DataLoader,
     device: torch.device,
     amp_dtype: torch.dtype,
@@ -511,8 +297,6 @@ def run_eval(
         "loss_total": 0.0,
         "loss_rec": 0.0,
         "loss_lpips": 0.0,
-        "loss_cls": 0.0,
-        "loss_feat": 0.0,
         "loss_res": 0.0,
         "loss_tv": 0.0,
     }
@@ -530,8 +314,9 @@ def run_eval(
             residual=residual,
             target=target,
             lpips_model=lpips_model,
-            classifier_model=classifier_model,
-            cfg=cfg,
+            lambda_lpips=cfg.lambda_lpips,
+            lambda_res=cfg.lambda_res,
+            lambda_tv=cfg.lambda_tv,
         )
 
         bs = x.size(0)
@@ -541,8 +326,6 @@ def run_eval(
         meter["loss_total"] += float(loss.detach().cpu()) * bs
         meter["loss_rec"] += parts["loss_rec"] * bs
         meter["loss_lpips"] += parts["loss_lpips"] * bs
-        meter["loss_cls"] += parts["loss_cls"] * bs
-        meter["loss_feat"] += parts["loss_feat"] * bs
         meter["loss_res"] += parts["loss_res"] * bs
         meter["loss_tv"] += parts["loss_tv"] * bs
 
@@ -553,9 +336,6 @@ def run_eval(
 
 def train(cfg: TrainConfig):
     set_seed(cfg.seed)
-
-    if (cfg.lambda_cls > 0 or cfg.lambda_feat > 0) and not cfg.classifier_checkpoint:
-        raise ValueError("classifier_checkpoint is required when lambda_cls > 0 or lambda_feat > 0.")
 
     save_dir = resolve_path(cfg.save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -582,7 +362,7 @@ def train(cfg: TrainConfig):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     amp_dtype = get_amp_dtype(cfg.precision)
 
-    model = Scale1RefinerUNet(
+    model = Scale0RefinerUNet(
         in_ch=6,
         base_ch=cfg.base_channels,
         residual_scale=cfg.residual_scale,
@@ -592,15 +372,6 @@ def train(cfg: TrainConfig):
     lpips_model.eval()
     for p in lpips_model.parameters():
         p.requires_grad_(False)
-
-    classifier_model = None
-    if cfg.classifier_checkpoint and (cfg.lambda_cls > 0 or cfg.lambda_feat > 0):
-        classifier_model = load_classifier_checkpoint(
-            checkpoint_path=cfg.classifier_checkpoint,
-            arch=cfg.classifier_arch,
-            num_classes=cfg.classifier_num_classes,
-            device=device,
-        )
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -619,8 +390,8 @@ def train(cfg: TrainConfig):
     meta = {
         "config": asdict(cfg),
         "num_common_ids": len(all_ids),
-        "num_train_samples": len(train_ds),
-        "num_val_samples": len(val_ds),
+        "num_train_ids": len(train_ds),
+        "num_val_ids": len(val_ds),
     }
     with open(save_dir / "train_meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
@@ -639,8 +410,6 @@ def train(cfg: TrainConfig):
             "loss_total": 0.0,
             "loss_rec": 0.0,
             "loss_lpips": 0.0,
-            "loss_cls": 0.0,
-            "loss_feat": 0.0,
             "loss_res": 0.0,
             "loss_tv": 0.0,
         }
@@ -661,19 +430,17 @@ def train(cfg: TrainConfig):
                 residual=residual,
                 target=target,
                 lpips_model=lpips_model,
-                classifier_model=classifier_model,
-                cfg=cfg,
+                lambda_lpips=cfg.lambda_lpips,
+                lambda_res=cfg.lambda_res,
+                lambda_tv=cfg.lambda_tv,
             )
 
             if scaler.is_enabled():
                 scaler.scale(loss).backward()
-                scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                 optimizer.step()
 
             bs = x.size(0)
@@ -681,8 +448,6 @@ def train(cfg: TrainConfig):
             meter["loss_total"] += float(loss.detach().cpu()) * bs
             meter["loss_rec"] += parts["loss_rec"] * bs
             meter["loss_lpips"] += parts["loss_lpips"] * bs
-            meter["loss_cls"] += parts["loss_cls"] * bs
-            meter["loss_feat"] += parts["loss_feat"] * bs
             meter["loss_res"] += parts["loss_res"] * bs
             meter["loss_tv"] += parts["loss_tv"] * bs
 
@@ -690,8 +455,8 @@ def train(cfg: TrainConfig):
                 loss=f"{meter['loss_total']/seen:.4f}",
                 rec=f"{meter['loss_rec']/seen:.4f}",
                 lpips=f"{meter['loss_lpips']/seen:.4f}",
-                cls=f"{meter['loss_cls']/seen:.4f}",
-                feat=f"{meter['loss_feat']/seen:.4f}",
+                res=f"{meter['loss_res']/seen:.4f}",
+                tv=f"{meter['loss_tv']/seen:.4f}",
                 lr=f"{optimizer.param_groups[0]['lr']:.2e}",
             )
 
@@ -700,30 +465,18 @@ def train(cfg: TrainConfig):
         for k in meter:
             meter[k] /= max(seen, 1)
 
-        val_loss, val_parts = run_eval(
-            model=model,
-            lpips_model=lpips_model,
-            classifier_model=classifier_model,
-            loader=val_loader,
-            device=device,
-            amp_dtype=amp_dtype,
-            cfg=cfg,
-        )
+        val_loss, val_parts = run_eval(model, lpips_model, val_loader, device, amp_dtype, cfg)
 
         row = {
             "epoch": epoch,
             "train_loss_total": meter["loss_total"],
             "train_loss_rec": meter["loss_rec"],
             "train_loss_lpips": meter["loss_lpips"],
-            "train_loss_cls": meter["loss_cls"],
-            "train_loss_feat": meter["loss_feat"],
             "train_loss_res": meter["loss_res"],
             "train_loss_tv": meter["loss_tv"],
             "val_loss_total": val_loss,
             "val_loss_rec": val_parts["loss_rec"],
             "val_loss_lpips": val_parts["loss_lpips"],
-            "val_loss_cls": val_parts["loss_cls"],
-            "val_loss_feat": val_parts["loss_feat"],
             "val_loss_res": val_parts["loss_res"],
             "val_loss_tv": val_parts["loss_tv"],
             "lr": optimizer.param_groups[0]["lr"],
@@ -735,8 +488,6 @@ def train(cfg: TrainConfig):
             f"train_total={row['train_loss_total']:.6f} "
             f"train_rec={row['train_loss_rec']:.6f} "
             f"train_lpips={row['train_loss_lpips']:.6f} "
-            f"train_cls={row['train_loss_cls']:.6f} "
-            f"train_feat={row['train_loss_feat']:.6f} "
             f"val_total={row['val_loss_total']:.6f} "
             f"val_rec={row['val_loss_rec']:.6f} "
             f"val_lpips={row['val_loss_lpips']:.6f}"
@@ -767,13 +518,13 @@ def train(cfg: TrainConfig):
 def refine_batch(
     checkpoint_path: str,
     pre_dir: str,
-    scale1_dir: str,
+    scale0_dir: str,
     output_dir: str,
-    image_size: Optional[int] = None,
+    image_size: int | None = None,
 ):
     checkpoint_path = resolve_path(checkpoint_path)
     pre_dir = resolve_path(pre_dir)
-    scale1_dir = resolve_path(scale1_dir)
+    scale0_dir = resolve_path(scale0_dir)
     output_dir = resolve_path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -784,13 +535,13 @@ def refine_batch(
         image_size = cfg.image_size
 
     pre_map = list_image_map(pre_dir)
-    scale1_map = list_image_map(scale1_dir)
-    common = sorted(set(pre_map) & set(scale1_map))
+    scale0_map = list_image_map(scale0_dir)
+    common = sorted(set(pre_map) & set(scale0_map))
     if not common:
-        raise ValueError("No common stems among pre and scale1.")
+        raise ValueError("No common stems among pre and scale0.")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = Scale1RefinerUNet(
+    model = Scale0RefinerUNet(
         in_ch=6,
         base_ch=cfg.base_channels,
         residual_scale=cfg.residual_scale,
@@ -799,11 +550,11 @@ def refine_batch(
     model.eval()
 
     print(f"Found {len(common)} images.")
-    print(f"Saving refined scale1 to: {output_dir}")
+    print(f"Saving refined scale0 to: {output_dir}")
 
-    for stem in tqdm(common, desc="Refining scale1"):
+    for stem in tqdm(common, desc="Refining scale0"):
         pre = load_rgb(pre_map[stem], image_size).unsqueeze(0).to(device)
-        gen = load_rgb(scale1_map[stem], image_size).unsqueeze(0).to(device)
+        gen = load_rgb(scale0_map[stem], image_size).unsqueeze(0).to(device)
         x = torch.cat([gen, pre], dim=1)
 
         refined, _ = model(x, gen)
@@ -812,15 +563,62 @@ def refine_batch(
     print("Refine done.")
 
 
+@torch.no_grad()
+def predict_residual_batch(
+    checkpoint_path: str,
+    pre_dir: str,
+    input_dir: str,
+    output_dir: str,
+    image_size: int | None = None,
+):
+    """
+    Save only residual tensors/images for analysis or pseudo-label building.
+    Output is RGB residual mapped to [0,255] for visualization only.
+    Usually you should use this model through build_pseudo_targets.py instead.
+    """
+    checkpoint_path = resolve_path(checkpoint_path)
+    pre_dir = resolve_path(pre_dir)
+    input_dir = resolve_path(input_dir)
+    output_dir = resolve_path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    ckpt = torch.load(checkpoint_path, map_location="cpu")
+    cfg = TrainConfig(**ckpt["config"])
+
+    if image_size is None:
+        image_size = cfg.image_size
+
+    pre_map = list_image_map(pre_dir)
+    input_map = list_image_map(input_dir)
+    common = sorted(set(pre_map) & set(input_map))
+    if not common:
+        raise ValueError("No common stems among pre and input_dir.")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = Scale0RefinerUNet(
+        in_ch=6,
+        base_ch=cfg.base_channels,
+        residual_scale=cfg.residual_scale,
+    ).to(device)
+    model.load_state_dict(ckpt["model"], strict=True)
+    model.eval()
+
+    for stem in tqdm(common, desc="Saving residual vis"):
+        pre = load_rgb(pre_map[stem], image_size).unsqueeze(0).to(device)
+        gen = load_rgb(input_map[stem], image_size).unsqueeze(0).to(device)
+        x = torch.cat([gen, pre], dim=1)
+        _, residual = model(x, gen)
+        tensor_to_pil_rgb(residual).save(output_dir / f"{stem}.png")
+
+
 def build_parser():
-    parser = argparse.ArgumentParser("Stronger scale1 -> post refiner")
+    parser = argparse.ArgumentParser("Scale0 -> pre refiner")
     sub = parser.add_subparsers(dest="mode", required=True)
 
     p_train = sub.add_parser("train")
-    p_train.add_argument("--pre_dir", type=str, default=DEFAULT_PRE_DIR)
-    p_train.add_argument("--post_dir", type=str, default=DEFAULT_POST_DIR)
-    p_train.add_argument("--scale1_dir", type=str, default=DEFAULT_SCALE1_DIR)
-    p_train.add_argument("--save_dir", type=str, default=DEFAULT_SAVE_DIR)
+    p_train.add_argument("--pre_dir", type=str, required=True)
+    p_train.add_argument("--scale0_dir", type=str, required=True)
+    p_train.add_argument("--save_dir", type=str, required=True)
 
     p_train.add_argument("--image_size", type=int, default=256)
     p_train.add_argument("--batch_size", type=int, default=8)
@@ -832,28 +630,19 @@ def build_parser():
     p_train.add_argument("--val_ratio", type=float, default=0.1)
 
     p_train.add_argument("--base_channels", type=int, default=64)
-    p_train.add_argument("--residual_scale", type=float, default=1.00)
-
-    p_train.add_argument("--lambda_lpips", type=float, default=0.40)
-    p_train.add_argument("--lambda_res", type=float, default=5e-4)
-    p_train.add_argument("--lambda_tv", type=float, default=5e-4)
-
-    p_train.add_argument("--lambda_cls", type=float, default=0.50)
-    p_train.add_argument("--lambda_feat", type=float, default=0.10)
-    p_train.add_argument("--classifier_checkpoint", type=str, default=DEFAULT_CLASSIFIER_CKPT)
-    p_train.add_argument("--classifier_arch", type=str, choices=["mobilenet_v3_small", "resnet18"], default="mobilenet_v3_small")
-    p_train.add_argument("--classifier_num_classes", type=int, default=2)
-    p_train.add_argument("--classifier_target_label", type=int, default=1)
-    p_train.add_argument("--classifier_image_size", type=int, default=224)
+    p_train.add_argument("--residual_scale", type=float, default=0.80)
+    p_train.add_argument("--lambda_lpips", type=float, default=0.30)
+    p_train.add_argument("--lambda_res", type=float, default=0.001)
+    p_train.add_argument("--lambda_tv", type=float, default=0.001)
 
     p_train.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
     p_train.add_argument("--lpips_backbone", type=str, choices=["alex", "vgg", "squeeze"], default="alex")
 
     p_refine = sub.add_parser("refine")
-    p_refine.add_argument("--checkpoint", type=str, default=str(Path(DEFAULT_SAVE_DIR) / "best.pt"))
-    p_refine.add_argument("--pre_dir", type=str, default=DEFAULT_PRE_DIR)
-    p_refine.add_argument("--scale1_dir", type=str, default=DEFAULT_SCALE1_DIR)
-    p_refine.add_argument("--output_dir", type=str, default=DEFAULT_OUTPUT_DIR)
+    p_refine.add_argument("--checkpoint", type=str, required=True)
+    p_refine.add_argument("--pre_dir", type=str, required=True)
+    p_refine.add_argument("--scale0_dir", type=str, required=True)
+    p_refine.add_argument("--output_dir", type=str, required=True)
     p_refine.add_argument("--image_size", type=int, default=None)
 
     return parser
@@ -866,8 +655,7 @@ def main():
     if args.mode == "train":
         cfg = TrainConfig(
             pre_dir=args.pre_dir,
-            post_dir=args.post_dir,
-            scale1_dir=args.scale1_dir,
+            scale0_dir=args.scale0_dir,
             save_dir=args.save_dir,
             image_size=args.image_size,
             batch_size=args.batch_size,
@@ -882,23 +670,15 @@ def main():
             lambda_lpips=args.lambda_lpips,
             lambda_res=args.lambda_res,
             lambda_tv=args.lambda_tv,
-            lambda_cls=args.lambda_cls,
-            lambda_feat=args.lambda_feat,
-            classifier_checkpoint=args.classifier_checkpoint,
-            classifier_arch=args.classifier_arch,
-            classifier_num_classes=args.classifier_num_classes,
-            classifier_target_label=args.classifier_target_label,
-            classifier_image_size=args.classifier_image_size,
             precision=args.precision,
             lpips_backbone=args.lpips_backbone,
         )
         train(cfg)
-
     elif args.mode == "refine":
         refine_batch(
             checkpoint_path=args.checkpoint,
             pre_dir=args.pre_dir,
-            scale1_dir=args.scale1_dir,
+            scale0_dir=args.scale0_dir,
             output_dir=args.output_dir,
             image_size=args.image_size,
         )

@@ -2,9 +2,9 @@
 import os
 import shutil
 
-SRC_DIR = "/home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/images"
-DST_POST = "/home/sjq/concept_sliders/datasets/remote/florence/post"
-DST_PRE  = "/home/sjq/concept_sliders/datasets/remote/florence/pre"
+SRC_DIR = "datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/images"
+DST_POST = "datasets/remote/florence/post"
+DST_PRE  = "datasets/remote/florence/pre"
 
 START = 0
 END = 545  # inclusive, so total = 546

@@ -4,8 +4,8 @@ import re
 import shutil
 from pathlib import Path
 
-SRC = Path("/home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/images")
-DST = Path("/home/sjq/concept_sliders/datasets/remote/santarosa/pre")
+SRC = Path("datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/images")
+DST = Path("datasets/remote/santarosa/pre")
 
 SKIP_IDS = {
     4, 7, 9, 17, 18, 40, 42, 47, 56, 69, 72, 73, 124, 125, 128, 130,

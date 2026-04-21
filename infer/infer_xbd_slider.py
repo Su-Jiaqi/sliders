@@ -414,7 +414,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default="outputs/infer")
     parser.add_argument("--pretrained_model", type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="fp16")
+    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--local_files_only", action="store_true")
 
     parser.add_argument("--mode", type=str, choices=["random", "image2image"], default="image2image")
@@ -438,7 +438,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start_noise",
         type=int,
-        default=200,
+        default=100,
         help="Training-space noise step for img2img (0–999). Lower keeps structure closer to input.",
     )
     parser.add_argument("--slider_scale", type=float, default=1.0)

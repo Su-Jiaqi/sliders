@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="/home/sjq/concept_sliders"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 INFER_SCRIPT="$REPO_ROOT/infer/batch_infer_xbd_paired_scales.py"
 MODEL_PATH="$REPO_ROOT/output-models/lora/xbd_paired_slider_endpoint_paired_alpha16.0_rank16_full/xbd_paired_slider_endpoint_paired_alpha16.0_rank16_full_last.safetensors"
 DATA_ROOT="$REPO_ROOT/datasets/remote/socalfire"

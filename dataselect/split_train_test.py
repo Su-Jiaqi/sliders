@@ -3,7 +3,7 @@ import random
 import shutil
 from pathlib import Path
 
-SRC = Path("/home/sjq/concept_sliders/datasets/aug/generate")
+SRC = Path("datasets/aug/generate")
 PRE = SRC / "pre"
 POST = SRC / "post"
 

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 s_vals = [0.00, 0.25, 0.50, 0.75, 1.00]
 post_probs = [0.0171, 0.9654, 0.9705, 0.9741, 0.9959]
 
-save_dir = "/home/sjq/concept_sliders/outputs/eval"
+save_dir = "outputs/eval"
 os.makedirs(save_dir, exist_ok=True)
 
 plt.figure(figsize=(4.8, 3.8))

@@ -24,7 +24,7 @@ Typical usage for a strong post-only sanity/overfit test:
     python xbd_controlnet_risk_binary_v2.py train \
       --pre_dir /path/to/pre \
       --post_dir /path/to/post \
-      --output_dir /data2/sjq/output-models/xbd_controlnet_postonly_full770_v2 \
+      --output_dir output-models/xbd_controlnet_postonly_full770_v2 \
       --pretrained_model runwayml/stable-diffusion-v1-5 \
       --post_prompt "aerial post-disaster image of the same location after wildfire damage" \
       --resolution 512 \
@@ -43,12 +43,12 @@ Typical usage for a strong post-only sanity/overfit test:
 
 Then sample with:
     python xbd_controlnet_risk_binary_v2.py sample \
-      --controlnet_dir /data2/.../final_controlnet \
-      --unet_lora_dir /data2/.../final_unet_lora \
+      --controlnet_dir output-models/.../final_controlnet \
+      --unet_lora_dir output-models/.../final_unet_lora \
       --pretrained_model runwayml/stable-diffusion-v1-5 \
       --input_pre /path/to/pre/example.png \
       --prompt "aerial post-disaster image of the same location after wildfire damage" \
-      --output_dir /data2/.../samples \
+      --output_dir output-models/.../samples \
       --severities 1.0 \
       --num_inference_steps 40 \
       --guidance_scale 4.0

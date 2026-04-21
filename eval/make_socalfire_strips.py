@@ -51,22 +51,22 @@ def main():
     parser.add_argument(
         "--pre_dir",
         type=str,
-        default="/home/sjq/concept_sliders/datasets/remote/socalfire/pre",
+        default="datasets/remote/socalfire/pre",
     )
     parser.add_argument(
         "--post_dir",
         type=str,
-        default="/home/sjq/concept_sliders/datasets/remote/socalfire/post",
+        default="datasets/remote/socalfire/post",
     )
     parser.add_argument(
         "--eval_root",
         type=str,
-        default="/home/sjq/concept_sliders/outputs/refined/socalfire-train/eval",
+        default="outputs/refined/socalfire-train/eval",
     )
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="/home/sjq/concept_sliders/outputs/eval/socalfire-train",
+        default="outputs/eval/socalfire-train",
     )
     parser.add_argument("--panel_size", type=int, default=256)
     args = parser.parse_args()

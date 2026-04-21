@@ -3,8 +3,8 @@ import os
 import re
 import shutil
 
-SRC_DIR = "/home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/images"
-DST_DIR = "/home/sjq/concept_sliders/datasets/aug/xbd/test/post"
+SRC_DIR = "datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/images"
+DST_DIR = "datasets/aug/xbd/test/post"
 
 # 这些 id 的图片不要复制（注意：这里的 id 是“源文件编号”，也就是文件名里的 xxxxxxxx 这个数）
 SKIP_IDS = {

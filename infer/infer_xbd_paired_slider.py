@@ -344,7 +344,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default="outputs/infer_paired")
     parser.add_argument("--pretrained_model", type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="fp16")
+    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--local_files_only", action="store_true")
 
     parser.add_argument("--input_image", type=str, required=True)
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     parser.add_argument("--negative_prompt", type=str, default="")
     parser.add_argument("--guidance_scale", type=float, default=1.0)
     parser.add_argument("--steps", type=int, default=50)
-    parser.add_argument("--start_noise", type=int, default=400)
+    parser.add_argument("--start_noise", type=int, default=100)
 
     parser.add_argument("--strip_scales", type=str, default="0,0.25,0.5,0.75,1")
     parser.add_argument("--seed", type=int, default=None)

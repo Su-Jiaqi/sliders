@@ -3,10 +3,10 @@
 Batch-generate image-level damage labels from xBD-style post_disaster jsons.
 
 Input dir:
-  /home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/labels
+  datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/labels
 
 Output dir:
-  /home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/level
+  datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/train/level
 
 Produces:
   - For each *_post_disaster.json -> *_image_level_label.json
@@ -190,10 +190,10 @@ def process_folder(in_dir: Path, out_dir: Path, keep_uid_map: bool = False, verb
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--in_dir", type=str,
-                        default="/home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/labels",
+                        default="datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/labels",
                         help="directory with *_post_disaster.json files")
     parser.add_argument("--out_dir", type=str,
-                        default="/home/sjq/concept_sliders/datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/level",
+                        default="datasets/Disaster_Recognition_RemoteSense_EN_CN_JA_hub/test/level",
                         help="output directory for *_image_level_label.json files")
     parser.add_argument("--keep_uid_map", action="store_true",
                         help="keep uid_to_level in output json (may be large)")

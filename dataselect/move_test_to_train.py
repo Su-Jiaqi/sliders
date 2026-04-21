@@ -4,8 +4,8 @@ import random
 import shutil
 from pathlib import Path
 
-SRC_ROOT = Path("/home/sjq/concept_sliders/datasets/aug/xbd/test")
-DST_ROOT = Path("/home/sjq/concept_sliders/datasets/aug/xbd/train")
+SRC_ROOT = Path("datasets/aug/xbd/test")
+DST_ROOT = Path("datasets/aug/xbd/train")
 
 SRC_PRE  = SRC_ROOT / "pre"
 SRC_POST = SRC_ROOT / "post"

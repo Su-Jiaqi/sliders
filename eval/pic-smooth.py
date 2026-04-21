@@ -12,7 +12,7 @@ x_smooth = np.linspace(x.min(), x.max(), 300)
 interp = PchipInterpolator(x, y)
 y_smooth = interp(x_smooth)
 
-save_dir = "/home/sjq/concept_sliders/outputs/eval"
+save_dir = "outputs/eval"
 os.makedirs(save_dir, exist_ok=True)
 
 plt.figure(figsize=(4.8, 3.8))

@@ -40,7 +40,7 @@ def parse_scales(scale_str: str) -> list[float]:
 
 
 def scale_dir_name(scale: float) -> str:
-    return f"scale_{scale:g}"
+    return f"scale{scale:g}"
 
 
 def load_image(path: Path, image_size: int) -> torch.Tensor:
@@ -215,13 +215,13 @@ def main():
 
     parser.add_argument("--pretrained_model", type=str, default="CompVis/stable-diffusion-v1-4")
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="fp16")
+    parser.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
     parser.add_argument("--local_files_only", action="store_true")
 
     parser.add_argument("--image_size", type=int, default=256)
     parser.add_argument("--guidance_scale", type=float, default=1.0)
     parser.add_argument("--steps", type=int, default=50)
-    parser.add_argument("--start_noise", type=int, default=400)
+    parser.add_argument("--start_noise", type=int, default=100)
 
     parser.add_argument("--rank", type=int, required=True)
     parser.add_argument("--alpha", type=float, required=True)
@@ -308,7 +308,11 @@ def main():
         state_dict = load_file(str(lora_path))
     else:
         state_dict = torch.load(str(lora_path), map_location="cpu")
-    network.load_state_dict(state_dict, strict=True)
+    msg = network.load_state_dict(state_dict, strict=False)
+    if len(msg.missing_keys) > 0:
+        print(f"[LoRA] missing keys: {len(msg.missing_keys)}", flush=True)
+    if len(msg.unexpected_keys) > 0:
+        print(f"[LoRA] unexpected keys: {len(msg.unexpected_keys)}", flush=True)
 
     cond_emb = encode_prompt(tokenizer, text_encoder, args.positive_prompt, device, batch_size=1)
     uncond_emb = encode_prompt(tokenizer, text_encoder, args.negative_prompt, device, batch_size=1)

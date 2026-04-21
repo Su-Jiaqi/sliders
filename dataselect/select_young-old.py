@@ -14,12 +14,12 @@ Match constraint:
 - Same race
 
 Source:
-- /home/sjq/concept_sliders/datasets/crop_part1
+- datasets/crop_part1
 
 Output:
-- /home/sjq/concept_sliders/datasets/faceage/young
-- /home/sjq/concept_sliders/datasets/faceage/old
-- /home/sjq/concept_sliders/datasets/faceage/pairs_manifest.csv
+- datasets/faceage/young
+- datasets/faceage/old
+- datasets/faceage/pairs_manifest.csv
 """
 
 import re
@@ -30,8 +30,8 @@ from pathlib import Path
 from collections import defaultdict
 
 # ---------------- Config ----------------
-SRC_DIR = Path("/home/sjq/concept_sliders/datasets/crop_part1")
-OUT_BASE = Path("/home/sjq/concept_sliders/datasets/faceage")
+SRC_DIR = Path("datasets/crop_part1")
+OUT_BASE = Path("datasets/faceage")
 YOUNG_DIR = OUT_BASE / "young"
 OLD_DIR = OUT_BASE / "old"
 MANIFEST = OUT_BASE / "pairs_manifest.csv"

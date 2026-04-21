@@ -1,9 +1,13 @@
 prompts_file: train/configs/prompts_xbd.yaml
 
 dataset:
-  root: datasets/remote/socalfire
-  pre_dir: "pre"
-  post_dir: "post"
+  # root: datasets/remote/socalfire
+  # root: datasets/remote/santarosa
+  # root: datasets/remote/volcano
+  # root: datasets/remote/hurricane-florence
+  root: datasets/remote/midwest-flooding
+  pre_dir: "train/pre"
+  post_dir: "train/post"
   image_size: 256
   num_workers: 0
 
@@ -43,8 +47,8 @@ train:
   img_loss_start_step: 0
 
 save:
-  name: "xbd_paired_slider_endpoint"
-  path: output-models
+  name: "midwest-flooding_slider"
+  path: output-models/train
   per_steps: 500
   precision: "float32"
 

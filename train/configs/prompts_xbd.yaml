@@ -1,4 +1,5 @@
-- positive: "high-resolution overhead satellite image after a disaster, damaged buildings, debris, burned or flooded area, destruction visible"
+# - positive: "high-resolution overhead satellite image after a disaster, damaged buildings, debris, burned or flooded area, destruction visible"
+- positive: "high-resolution overhead satellite image after wildfire, burned buildings, scorch marks, ash and smoke traces, severe fire damage visible"
   neutral: "high-resolution overhead satellite image before a disaster, intact buildings, normal roads, no visible damage"
   unconditional: ""
   guidance_scale: 2.0

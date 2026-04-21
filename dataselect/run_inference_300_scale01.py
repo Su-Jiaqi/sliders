@@ -70,7 +70,7 @@ def main():
     negative_prompt = None
 
     lora_weights = [
-        "/home/sjq/concept_sliders/models/wildfire_alpha1.0_rank8_noxattn/wildfire_alpha1.0_rank8_noxattn_last.safetensors",
+        "models/wildfire_alpha1.0_rank8_noxattn/wildfire_alpha1.0_rank8_noxattn_last.safetensors",
     ]
     lora_weight = lora_weights[0]
 

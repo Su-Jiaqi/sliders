@@ -14,15 +14,15 @@ from torchvision import datasets, transforms, models
 # =======================
 # 默认参数（你可以不传命令行）
 # =======================
-# DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/datasets/aug/generate/train"
-# DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/datasets/aug/generate/test"
-# DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/outputs/prepost_cls_generate"
-# DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/datasets/remote/socalfire"
-# DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/datasets/remote/socalfire/test"
-# DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_xbd"
-DEFAULT_TRAIN_DIR = "/home/sjq/concept_sliders/outputs/refined/socalfire-train/prepared-classifier-2"
-DEFAULT_TEST_DIR  = "/home/sjq/concept_sliders/outputs/refined/socalfire-test/prepared-classifier-2"
-DEFAULT_OUT_DIR   = "/home/sjq/concept_sliders/output-models/classifier/socalfire/socalfire_cls_generated-2"
+# DEFAULT_TRAIN_DIR = "datasets/aug/generate/train"
+# DEFAULT_TEST_DIR  = "datasets/aug/generate/test"
+# DEFAULT_OUT_DIR   = "outputs/prepost_cls_generate"
+# DEFAULT_TRAIN_DIR = "datasets/remote/socalfire"
+# DEFAULT_TEST_DIR  = "datasets/remote/socalfire/test"
+# DEFAULT_OUT_DIR   = "output-models/classifier/socalfire/socalfire_cls_xbd"
+DEFAULT_TRAIN_DIR = "outputs/refined/socalfire-train/prepared-classifier-2"
+DEFAULT_TEST_DIR  = "outputs/refined/socalfire-test/prepared-classifier-2"
+DEFAULT_OUT_DIR   = "output-models/classifier/socalfire/socalfire_cls_generated-2"
 
 DEFAULT_ARCH = "mobilenet_v3_small"  # or resnet18
 DEFAULT_IMG_SIZE = 224

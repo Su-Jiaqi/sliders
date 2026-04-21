@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-cd /home/sjq/concept_sliders
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
 
 export CUDA_VISIBLE_DEVICES=5
 export PYTHONUNBUFFERED=1
 
-PRE_DIR="/home/sjq/concept_sliders/datasets/remote/socalfire/pre"
-POST_DIR="/home/sjq/concept_sliders/datasets/remote/socalfire/post"
+PRE_DIR="datasets/remote/socalfire/pre"
+POST_DIR="datasets/remote/socalfire/post"
 
-# OUTPUT_DIR="/home/sjq/concept_sliders/output-models/xbd_controlnet_risk_binary"
+# OUTPUT_DIR="output-models/xbd_controlnet_risk_binary"
 
-OUTPUT_DIR="/data2/sjq/output-models/xbd_controlnet_risk_binary"
+OUTPUT_DIR="output-models/xbd_controlnet_risk_binary"
 PROMPT="aerial post-disaster image of the same location after wildfire damage"
 
 mkdir -p logs
