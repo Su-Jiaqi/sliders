@@ -95,6 +95,11 @@ class TrainConfig:
     lpips_backbone: str = "alex"
 
 
+@dataclass
+class ResumeConfig(TrainConfig):
+    resume_checkpoint: str = ""
+
+
 class UnifiedScaleRefinerDataset(Dataset):
     """
     input: [gen_s(3), pre(3), scale_map(1)] => 7 channels
@@ -534,6 +539,173 @@ def train(cfg: TrainConfig):
     print(f"Best val total loss: {best_val:.6f}")
 
 
+def resume_train(cfg: ResumeConfig):
+    set_seed(cfg.seed)
+    save_dir = resolve_path(cfg.save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    resume_checkpoint = resolve_path(cfg.resume_checkpoint)
+    ckpt = torch.load(resume_checkpoint, map_location="cpu")
+    start_epoch = int(ckpt.get("epoch", 0)) + 1
+    history = list(ckpt.get("history", []))
+    best_val = min((row.get("val_loss_total", math.inf) for row in history), default=math.inf)
+
+    train_ds, val_ds, all_pairs = build_datasets(cfg)
+
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=cfg.batch_size,
+        shuffle=True,
+        num_workers=cfg.num_workers,
+        pin_memory=torch.cuda.is_available(),
+        drop_last=False,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=cfg.batch_size,
+        shuffle=False,
+        num_workers=cfg.num_workers,
+        pin_memory=torch.cuda.is_available(),
+        drop_last=False,
+    )
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    amp_dtype = get_amp_dtype(cfg.precision)
+
+    model = UnifiedResidualRefinerUNet(
+        in_ch=7,
+        base_ch=cfg.base_channels,
+        residual_scale=cfg.residual_scale,
+    ).to(device)
+    model.load_state_dict(ckpt["model"], strict=True)
+
+    lpips_model = lpips.LPIPS(net=cfg.lpips_backbone).to(device)
+    lpips_model.eval()
+    for p in lpips_model.parameters():
+        p.requires_grad_(False)
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.epochs, eta_min=cfg.lr * 0.1)
+    scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda" and cfg.precision == "fp16"))
+
+    for _ in range(max(start_epoch - 1, 0)):
+        scheduler.step()
+
+    meta = {
+        "config": asdict(cfg),
+        "num_pairs": len(all_pairs),
+        "num_train_samples": len(train_ds),
+        "num_val_samples": len(val_ds),
+        "resumed_from": str(resume_checkpoint),
+        "resume_start_epoch": start_epoch,
+    }
+    with open(save_dir / "train_meta.json", "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
+    print(f"Resuming from: {resume_checkpoint}")
+    print(f"start epoch: {start_epoch}")
+    print(f"train samples: {len(train_ds)}, val samples: {len(val_ds)}")
+    print(f"save dir: {save_dir}")
+
+    if start_epoch > cfg.epochs:
+        print("Checkpoint already reached or exceeded target epochs; nothing to do.")
+        return
+
+    for epoch in range(start_epoch, cfg.epochs + 1):
+        model.train()
+        seen = 0
+        meter = {
+            "loss_total": 0.0,
+            "loss_rec": 0.0,
+            "loss_lpips_raw": 0.0,
+            "loss_lpips_weighted": 0.0,
+            "loss_res": 0.0,
+            "loss_tv": 0.0,
+        }
+
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch}/{cfg.epochs}")
+        for batch in pbar:
+            x = batch["x"].to(device, non_blocking=True)
+            gen = batch["gen"].to(device, non_blocking=True)
+            target = batch["target"].to(device, non_blocking=True)
+            scale = batch["scale"].to(device, non_blocking=True)
+
+            optimizer.zero_grad(set_to_none=True)
+            with torch.autocast(device_type=device.type, enabled=(device.type == "cuda"), dtype=amp_dtype):
+                refined, residual = model(x, gen)
+
+            loss, parts = compute_losses(refined, residual, target, scale, lpips_model, cfg)
+
+            if scaler.is_enabled():
+                scaler.scale(loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+            else:
+                loss.backward()
+                optimizer.step()
+
+            bs = x.size(0)
+            seen += bs
+            meter["loss_total"] += float(loss.detach().cpu()) * bs
+            for k, v in parts.items():
+                meter[k] += v * bs
+
+            pbar.set_postfix(
+                loss=f"{meter['loss_total']/seen:.4f}",
+                rec=f"{meter['loss_rec']/seen:.4f}",
+                lpw=f"{meter['loss_lpips_weighted']/seen:.4f}",
+                res=f"{meter['loss_res']/seen:.4f}",
+                tv=f"{meter['loss_tv']/seen:.4f}",
+                lr=f"{optimizer.param_groups[0]['lr']:.2e}",
+            )
+
+        scheduler.step()
+
+        for k in meter:
+            meter[k] /= max(seen, 1)
+
+        val_loss, val_parts = run_eval(model, lpips_model, val_loader, device, amp_dtype, cfg)
+        row = {
+            "epoch": epoch,
+            "train_loss_total": meter["loss_total"],
+            "train_loss_rec": meter["loss_rec"],
+            "train_loss_lpips_raw": meter["loss_lpips_raw"],
+            "train_loss_lpips_weighted": meter["loss_lpips_weighted"],
+            "train_loss_res": meter["loss_res"],
+            "train_loss_tv": meter["loss_tv"],
+            "val_loss_total": val_loss,
+            "val_loss_rec": val_parts["loss_rec"],
+            "val_loss_lpips_raw": val_parts["loss_lpips_raw"],
+            "val_loss_lpips_weighted": val_parts["loss_lpips_weighted"],
+            "val_loss_res": val_parts["loss_res"],
+            "val_loss_tv": val_parts["loss_tv"],
+            "lr": optimizer.param_groups[0]["lr"],
+        }
+        history.append(row)
+
+        print(
+            f"[Epoch {epoch}] train_total={row['train_loss_total']:.6f} "
+            f"train_rec={row['train_loss_rec']:.6f} "
+            f"train_lpw={row['train_loss_lpips_weighted']:.6f} "
+            f"val_total={row['val_loss_total']:.6f} "
+            f"val_rec={row['val_loss_rec']:.6f} "
+            f"val_lpw={row['val_loss_lpips_weighted']:.6f}"
+        )
+
+        ckpt_out = {"model": model.state_dict(), "config": asdict(cfg), "epoch": epoch, "history": history}
+        torch.save(ckpt_out, save_dir / "last.pt")
+        if val_loss < best_val:
+            best_val = val_loss
+            torch.save(ckpt_out, save_dir / "best.pt")
+            print(f"Saved new best checkpoint: val_total={best_val:.6f}")
+
+        with open(save_dir / "history.json", "w", encoding="utf-8") as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+
+    print("Resume training finished.")
+    print(f"Best val total loss: {best_val:.6f}")
+
+
 @torch.no_grad()
 def refine_batch(
     checkpoint_path: str,
@@ -550,7 +722,9 @@ def refine_batch(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     ckpt = torch.load(checkpoint_path, map_location="cpu")
-    cfg = TrainConfig(**ckpt["config"])
+    cfg_dict = dict(ckpt["config"])
+    cfg_dict.pop("resume_checkpoint", None)
+    cfg = TrainConfig(**cfg_dict)
     if image_size is None:
         image_size = cfg.image_size
 
@@ -616,6 +790,30 @@ def build_parser():
     p_train.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
     p_train.add_argument("--lpips_backbone", type=str, choices=["alex", "vgg", "squeeze"], default="alex")
 
+    p_resume = sub.add_parser("resume")
+    p_resume.add_argument("--resume_checkpoint", type=str, required=True)
+    p_resume.add_argument("--pre_dir", type=str, required=True)
+    p_resume.add_argument("--post_dir", type=str, required=True)
+    p_resume.add_argument("--scale_root", type=str, required=True)
+    p_resume.add_argument("--pseudo_root", type=str, required=True)
+    p_resume.add_argument("--save_dir", type=str, required=True)
+    p_resume.add_argument("--image_size", type=int, default=256)
+    p_resume.add_argument("--batch_size", type=int, default=8)
+    p_resume.add_argument("--epochs", type=int, default=20)
+    p_resume.add_argument("--lr", type=float, default=2e-4)
+    p_resume.add_argument("--weight_decay", type=float, default=1e-4)
+    p_resume.add_argument("--num_workers", type=int, default=4)
+    p_resume.add_argument("--seed", type=int, default=42)
+    p_resume.add_argument("--val_ratio", type=float, default=0.1)
+    p_resume.add_argument("--base_channels", type=int, default=64)
+    p_resume.add_argument("--residual_scale", type=float, default=0.50)
+    p_resume.add_argument("--lambda_lpips_endpoint", type=float, default=0.30)
+    p_resume.add_argument("--lambda_lpips_mid", type=float, default=0.15)
+    p_resume.add_argument("--lambda_res", type=float, default=0.001)
+    p_resume.add_argument("--lambda_tv", type=float, default=0.001)
+    p_resume.add_argument("--precision", type=str, choices=["fp32", "fp16", "bf16"], default="bf16")
+    p_resume.add_argument("--lpips_backbone", type=str, choices=["alex", "vgg", "squeeze"], default="alex")
+
     p_refine = sub.add_parser("refine")
     p_refine.add_argument("--checkpoint", type=str, required=True)
     p_refine.add_argument("--pre_dir", type=str, required=True)
@@ -655,6 +853,32 @@ def main():
             lpips_backbone=args.lpips_backbone,
         )
         train(cfg)
+    elif args.mode == "resume":
+        cfg = ResumeConfig(
+            resume_checkpoint=args.resume_checkpoint,
+            pre_dir=args.pre_dir,
+            post_dir=args.post_dir,
+            scale_root=args.scale_root,
+            pseudo_root=args.pseudo_root,
+            save_dir=args.save_dir,
+            image_size=args.image_size,
+            batch_size=args.batch_size,
+            epochs=args.epochs,
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            num_workers=args.num_workers,
+            seed=args.seed,
+            val_ratio=args.val_ratio,
+            base_channels=args.base_channels,
+            residual_scale=args.residual_scale,
+            lambda_lpips_endpoint=args.lambda_lpips_endpoint,
+            lambda_lpips_mid=args.lambda_lpips_mid,
+            lambda_res=args.lambda_res,
+            lambda_tv=args.lambda_tv,
+            precision=args.precision,
+            lpips_backbone=args.lpips_backbone,
+        )
+        resume_train(cfg)
     elif args.mode == "refine":
         refine_batch(
             checkpoint_path=args.checkpoint,

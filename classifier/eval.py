@@ -1,5 +1,6 @@
 import os
 import csv
+import argparse
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -130,11 +131,18 @@ def evaluate(model, loader, device, class_to_idx, save_csv=None):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--gpu", type=int, default=DEFAULT_GPU)
+    parser.add_argument("--batch_size", type=int, default=DEFAULT_BATCH_SIZE)
+    parser.add_argument("--ckpt", type=str, default=DEFAULT_CKPT)
+    parser.add_argument("--data_dir", type=str, default=DEFAULT_DATA_DIR)
+    parser.add_argument("--save_csv", type=str, default=DEFAULT_SAVE_CSV)
+    args = parser.parse_args()
 
-    device = torch.device(f"cuda:{DEFAULT_GPU}" if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
 
-    checkpoint = torch.load(DEFAULT_CKPT, map_location=device)
+    checkpoint = torch.load(args.ckpt, map_location=device)
 
     arch = checkpoint["arch"]
     img_size = checkpoint["img_size"]
@@ -156,15 +164,15 @@ def main():
                              [0.229, 0.224, 0.225]),
     ])
 
-    dataset = make_fixed_class_dataset(DEFAULT_DATA_DIR, transform=test_tf)
+    dataset = make_fixed_class_dataset(args.data_dir, transform=test_tf)
     loader = DataLoader(dataset,
-                        batch_size=DEFAULT_BATCH_SIZE,
+                        batch_size=args.batch_size,
                         shuffle=False)
 
     acc, cm, metrics = evaluate(
         model, loader, device,
         class_to_idx,
-        save_csv=DEFAULT_SAVE_CSV
+        save_csv=args.save_csv
     )
 
     print("\n=== Evaluation Result ===")
@@ -182,7 +190,7 @@ def main():
         print("  Recall:", m["recall"])
         print("  F1:", m["f1"])
 
-    print("\nSaved detailed predictions to:", DEFAULT_SAVE_CSV)
+    print("\nSaved detailed predictions to:", args.save_csv)
 
 
 if __name__ == "__main__":
