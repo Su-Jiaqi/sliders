@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=37
+High-real-severity group (S_real>0): n=36
+
+Fitted probe on 243 real train images. alpha=316.2
+probe backbone: output-models/classifier/socalfire_cls_clean_split/best.pt
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/midwest-flooding/test ===
+  scale=    0  low_mean=0.259 [0.192,0.329]  high_mean=0.318 [0.248,0.388]  concordance=0.563 (n_pairs=1332, p=2.31e-06)
+  scale= 0.25  low_mean=0.284 [0.214,0.355]  high_mean=0.346 [0.273,0.419]  concordance=0.562 (n_pairs=1332, p=3.88e-06)
+  scale=  0.3  low_mean=0.290 [0.220,0.363]  high_mean=0.357 [0.281,0.433]  concordance=0.568 (n_pairs=1332, p=4.51e-07)
+  scale=  0.5  low_mean=0.291 [0.216,0.366]  high_mean=0.358 [0.272,0.441]  concordance=0.562 (n_pairs=1332, p=3.88e-06)
+  scale=  0.7  low_mean=0.268 [0.196,0.341]  high_mean=0.339 [0.250,0.424]  concordance=0.565 (n_pairs=1332, p=1.03e-06)
+  scale= 0.75  low_mean=0.263 [0.192,0.334]  high_mean=0.331 [0.243,0.414]  concordance=0.556 (n_pairs=1332, p=2.77e-05)
+  scale=    1  low_mean=0.241 [0.175,0.310]  high_mean=0.309 [0.219,0.393]  concordance=0.551 (n_pairs=1332, p=1.07e-04)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/midwest-flooding/test ===
+  scale=    0  low_mean=0.248 [0.188,0.309]  high_mean=0.289 [0.205,0.372]  concordance=0.518 (n_pairs=1332, p=9.89e-02)
+  scale= 0.25  low_mean=0.251 [0.178,0.325]  high_mean=0.310 [0.208,0.413]  concordance=0.518 (n_pairs=1332, p=9.89e-02)
+  scale=  0.3  low_mean=0.237 [0.161,0.318]  high_mean=0.307 [0.198,0.415]  concordance=0.528 (n_pairs=1332, p=2.27e-02)
+  scale=  0.5  low_mean=0.202 [0.121,0.292]  high_mean=0.333 [0.222,0.446]  concordance=0.592 (n_pairs=1332, p=8.38e-12)
+  scale=  0.7  low_mean=0.236 [0.151,0.328]  high_mean=0.398 [0.276,0.517]  concordance=0.629 (n_pairs=1332, p=1.68e-21)
+  scale= 0.75  low_mean=0.245 [0.161,0.339]  high_mean=0.420 [0.290,0.544]  concordance=0.637 (n_pairs=1332, p=6.97e-24)
+  scale=    1  low_mean=0.279 [0.209,0.354]  high_mean=0.411 [0.302,0.515]  concordance=0.641 (n_pairs=1332, p=2.22e-25)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/experiment_b_flooding_cleanwildfire_probe/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/experiment_b_flooding_cleanwildfire_probe/pairwise_concordance.csv

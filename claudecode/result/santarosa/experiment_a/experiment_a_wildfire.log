@@ -1,0 +1,22 @@
+Fitted probe on 71 real train images. alpha=31.62
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/santarosa/test ===
+  scale=    0  n= 46  Spearman rho=+0.590 (p=1.63e-05)  95% CI=[+0.369, +0.750]  mean_Shat=1.421
+  scale= 0.25  n= 46  Spearman rho=+0.550 (p=7.46e-05)  95% CI=[+0.308, +0.733]  mean_Shat=1.443
+  scale=  0.3  n= 46  Spearman rho=+0.543 (p=9.59e-05)  95% CI=[+0.296, +0.727]  mean_Shat=1.433
+  scale=  0.5  n= 46  Spearman rho=+0.519 (p=2.21e-04)  95% CI=[+0.279, +0.706]  mean_Shat=1.413
+  scale=  0.7  n= 46  Spearman rho=+0.550 (p=7.50e-05)  95% CI=[+0.300, +0.735]  mean_Shat=1.397
+  scale= 0.75  n= 46  Spearman rho=+0.523 (p=1.90e-04)  95% CI=[+0.273, +0.713]  mean_Shat=1.403
+  scale=    1  n= 46  Spearman rho=+0.541 (p=1.05e-04)  95% CI=[+0.290, +0.737]  mean_Shat=1.398
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/refine-2/santarosa/test ===
+  scale=    0  n= 46  Spearman rho=+0.494 (p=4.79e-04)  95% CI=[+0.237, +0.709]  mean_Shat=1.299
+  scale= 0.25  n= 46  Spearman rho=+0.527 (p=1.67e-04)  95% CI=[+0.272, +0.736]  mean_Shat=1.334
+  scale=  0.3  n= 46  Spearman rho=+0.525 (p=1.78e-04)  95% CI=[+0.279, +0.728]  mean_Shat=1.344
+  scale=  0.5  n= 46  Spearman rho=+0.561 (p=5.09e-05)  95% CI=[+0.323, +0.748]  mean_Shat=1.356
+  scale=  0.7  n= 46  Spearman rho=+0.558 (p=5.67e-05)  95% CI=[+0.325, +0.741]  mean_Shat=1.394
+  scale= 0.75  n= 46  Spearman rho=+0.564 (p=4.45e-05)  95% CI=[+0.333, +0.744]  mean_Shat=1.411
+  scale=    1  n= 46  Spearman rho=+0.482 (p=6.89e-04)  95% CI=[+0.222, +0.692]  mean_Shat=1.374
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/santarosa/experiment_a/experiment_a_results_wildfire_probe.csv

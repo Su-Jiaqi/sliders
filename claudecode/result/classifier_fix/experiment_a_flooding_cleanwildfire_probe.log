@@ -1,0 +1,22 @@
+Fitted probe on 243 real train images. alpha=316.2
+probe backbone: output-models/classifier/socalfire_cls_clean_split/best.pt
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/midwest-flooding/test ===
+  scale=    0  n= 73  Spearman rho=+0.232 (p=4.87e-02)  95% CI=[-0.002, +0.459]  mean_Shat=0.288
+  scale= 0.25  n= 73  Spearman rho=+0.242 (p=3.91e-02)  95% CI=[+0.010, +0.462]  mean_Shat=0.315
+  scale=  0.3  n= 73  Spearman rho=+0.255 (p=2.93e-02)  95% CI=[+0.022, +0.478]  mean_Shat=0.323
+  scale=  0.5  n= 73  Spearman rho=+0.267 (p=2.23e-02)  95% CI=[+0.043, +0.484]  mean_Shat=0.324
+  scale=  0.7  n= 73  Spearman rho=+0.279 (p=1.67e-02)  95% CI=[+0.059, +0.488]  mean_Shat=0.303
+  scale= 0.75  n= 73  Spearman rho=+0.262 (p=2.50e-02)  95% CI=[+0.039, +0.475]  mean_Shat=0.297
+  scale=    1  n= 73  Spearman rho=+0.259 (p=2.70e-02)  95% CI=[+0.026, +0.474]  mean_Shat=0.275
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/refine-2/midwest-flooding/test ===
+  scale=    0  n= 73  Spearman rho=+0.165 (p=1.62e-01)  95% CI=[-0.100, +0.400]  mean_Shat=0.268
+  scale= 0.25  n= 73  Spearman rho=+0.166 (p=1.62e-01)  95% CI=[-0.105, +0.400]  mean_Shat=0.280
+  scale=  0.3  n= 73  Spearman rho=+0.180 (p=1.28e-01)  95% CI=[-0.087, +0.417]  mean_Shat=0.271
+  scale=  0.5  n= 73  Spearman rho=+0.308 (p=7.97e-03)  95% CI=[+0.050, +0.521]  mean_Shat=0.267
+  scale=  0.7  n= 73  Spearman rho=+0.368 (p=1.36e-03)  95% CI=[+0.137, +0.576]  mean_Shat=0.316
+  scale= 0.75  n= 73  Spearman rho=+0.380 (p=9.13e-04)  95% CI=[+0.150, +0.583]  mean_Shat=0.331
+  scale=    1  n= 73  Spearman rho=+0.389 (p=6.63e-04)  95% CI=[+0.172, +0.585]  mean_Shat=0.344
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/experiment_a_flooding_cleanwildfire_probe.csv

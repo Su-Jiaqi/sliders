@@ -1,0 +1,36 @@
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1874146110812944e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.182800559718089e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1006915201505763e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1362196516984113e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1220026863156818e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+Low-real-severity group (S_real==0): n=37
+High-real-severity group (S_real>0): n=66
+
+Fitted probe on 366 real train images. alpha=562.3
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/socalfire/test ===
+  scale=    0  low_mean=0.253 [0.190,0.316]  high_mean=0.305 [0.270,0.341]  concordance=0.557 (n_pairs=2442, p=7.94e-09)
+  scale= 0.25  low_mean=0.278 [0.212,0.343]  high_mean=0.321 [0.286,0.358]  concordance=0.541 (n_pairs=2442, p=2.35e-05)
+  scale=  0.3  low_mean=0.287 [0.223,0.352]  high_mean=0.328 [0.293,0.365]  concordance=0.544 (n_pairs=2442, p=8.06e-06)
+  scale=  0.5  low_mean=0.267 [0.206,0.331]  high_mean=0.317 [0.281,0.355]  concordance=0.541 (n_pairs=2442, p=2.80e-05)
+  scale=  0.7  low_mean=0.243 [0.178,0.309]  high_mean=0.288 [0.252,0.326]  concordance=0.532 (n_pairs=2442, p=8.52e-04)
+  scale= 0.75  low_mean=0.239 [0.172,0.306]  high_mean=0.281 [0.244,0.319]  concordance=0.525 (n_pairs=2442, p=7.16e-03)
+  scale=    1  low_mean=0.226 [0.159,0.293]  high_mean=0.262 [0.224,0.301]  concordance=0.518 (n_pairs=2442, p=4.27e-02)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/socalfire/test ===
+  scale=    0  low_mean=0.100 [0.034,0.165]  high_mean=0.167 [0.128,0.211]  concordance=0.590 (n_pairs=2442, p=1.80e-19)
+  scale= 0.25  low_mean=0.140 [0.064,0.218]  high_mean=0.218 [0.174,0.267]  concordance=0.606 (n_pairs=2442, p=2.75e-26)
+  scale=  0.3  low_mean=0.152 [0.071,0.233]  high_mean=0.233 [0.188,0.285]  concordance=0.614 (n_pairs=2442, p=5.17e-30)
+  scale=  0.5  low_mean=0.229 [0.138,0.317]  high_mean=0.333 [0.273,0.395]  concordance=0.608 (n_pairs=2442, p=4.76e-27)
+  scale=  0.7  low_mean=0.340 [0.232,0.447]  high_mean=0.465 [0.382,0.547]  concordance=0.594 (n_pairs=2442, p=6.05e-21)
+  scale= 0.75  low_mean=0.365 [0.253,0.474]  high_mean=0.496 [0.409,0.585]  concordance=0.589 (n_pairs=2442, p=7.81e-19)
+  scale=    1  low_mean=0.378 [0.245,0.511]  high_mean=0.581 [0.489,0.676]  concordance=0.633 (n_pairs=2442, p=3.73e-40)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/socalfire/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/socalfire/experiment_b/pairwise_concordance.csv

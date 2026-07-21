@@ -1,0 +1,22 @@
+Fitted probe on 277 real train images. alpha=100
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/hurricane-florence/test ===
+  scale=    0  n= 92  Spearman rho=+0.203 (p=5.19e-02)  95% CI=[+0.002, +0.398]  mean_Shat=0.282
+  scale= 0.25  n= 92  Spearman rho=+0.184 (p=7.93e-02)  95% CI=[-0.018, +0.385]  mean_Shat=0.332
+  scale=  0.3  n= 92  Spearman rho=+0.163 (p=1.20e-01)  95% CI=[-0.039, +0.369]  mean_Shat=0.342
+  scale=  0.5  n= 92  Spearman rho=+0.179 (p=8.83e-02)  95% CI=[-0.039, +0.386]  mean_Shat=0.337
+  scale=  0.7  n= 92  Spearman rho=+0.186 (p=7.59e-02)  95% CI=[-0.031, +0.393]  mean_Shat=0.331
+  scale= 0.75  n= 92  Spearman rho=+0.186 (p=7.57e-02)  95% CI=[-0.032, +0.393]  mean_Shat=0.334
+  scale=    1  n= 92  Spearman rho=+0.177 (p=9.23e-02)  95% CI=[-0.036, +0.380]  mean_Shat=0.326
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/refine-2/hurricane-florence/test ===
+  scale=    0  n= 92  Spearman rho=+0.208 (p=4.63e-02)  95% CI=[+0.009, +0.404]  mean_Shat=0.260
+  scale= 0.25  n= 92  Spearman rho=+0.277 (p=7.62e-03)  95% CI=[+0.072, +0.464]  mean_Shat=0.289
+  scale=  0.3  n= 92  Spearman rho=+0.311 (p=2.58e-03)  95% CI=[+0.113, +0.493]  mean_Shat=0.308
+  scale=  0.5  n= 92  Spearman rho=+0.395 (p=9.65e-05)  95% CI=[+0.204, +0.559]  mean_Shat=0.394
+  scale=  0.7  n= 92  Spearman rho=+0.443 (p=9.61e-06)  95% CI=[+0.256, +0.609]  mean_Shat=0.486
+  scale= 0.75  n= 92  Spearman rho=+0.457 (p=4.60e-06)  95% CI=[+0.273, +0.620]  mean_Shat=0.510
+  scale=    1  n= 92  Spearman rho=+0.556 (p=8.50e-09)  95% CI=[+0.393, +0.699]  mean_Shat=0.655
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/hurricane-florence/experiment_a/experiment_a_results_wildfire_probe.csv

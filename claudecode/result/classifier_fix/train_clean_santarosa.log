@@ -1,0 +1,40 @@
+/home/xjtucxy/sjq/sliders/claudecode/code/classifier_fix/train_classifier_clean_split.py:137: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler() if device.type == "cuda" else None
+Using device: cuda:0
+Pool size: 144  ->  train=122  val=22
+Val class balance: pre=11 post=11
+Held-out TEST (touched only at the very end): n=94
+Train class counts (pre, post): [61.0, 61.0]  loss weights: [1.0, 1.0]
+Epoch 1/15 | train_loss=0.7067 train_acc=0.5000 | VAL_acc=0.7273
+  -> new best VAL checkpoint saved: val_acc=0.7273 (epoch 1)
+Epoch 2/15 | train_loss=0.5602 train_acc=0.8197 | VAL_acc=0.7273
+Epoch 3/15 | train_loss=0.4538 train_acc=0.8770 | VAL_acc=0.7727
+  -> new best VAL checkpoint saved: val_acc=0.7727 (epoch 3)
+Epoch 4/15 | train_loss=0.3739 train_acc=0.9508 | VAL_acc=0.9091
+  -> new best VAL checkpoint saved: val_acc=0.9091 (epoch 4)
+Epoch 5/15 | train_loss=0.3097 train_acc=0.9672 | VAL_acc=0.9091
+Epoch 6/15 | train_loss=0.2267 train_acc=0.9836 | VAL_acc=0.9091
+Epoch 7/15 | train_loss=0.2021 train_acc=0.9590 | VAL_acc=0.9545
+  -> new best VAL checkpoint saved: val_acc=0.9545 (epoch 7)
+Epoch 8/15 | train_loss=0.1833 train_acc=0.9836 | VAL_acc=1.0000
+  -> new best VAL checkpoint saved: val_acc=1.0000 (epoch 8)
+Epoch 9/15 | train_loss=0.1338 train_acc=0.9918 | VAL_acc=1.0000
+Epoch 10/15 | train_loss=0.1215 train_acc=0.9918 | VAL_acc=1.0000
+Epoch 11/15 | train_loss=0.1248 train_acc=0.9836 | VAL_acc=1.0000
+Epoch 12/15 | train_loss=0.1240 train_acc=0.9754 | VAL_acc=1.0000
+Epoch 13/15 | train_loss=0.1314 train_acc=0.9754 | VAL_acc=1.0000
+Epoch 14/15 | train_loss=0.0957 train_acc=1.0000 | VAL_acc=1.0000
+Epoch 15/15 | train_loss=0.1451 train_acc=0.9754 | VAL_acc=1.0000
+
+Training done. Best VAL acc=1.0000 at epoch 8
+
+=== HELD-OUT TEST (touched once, never used for selection) ===
+Test accuracy: 0.8298
+Confusion matrix (rows=true[pre,post], cols=pred[pre,post]):
+[[46  1]
+ [15 32]]
+  pre: P=0.754 R=0.979 F1=0.852
+  post: P=0.970 R=0.681 F1=0.800
+
+Wrote /home/xjtucxy/sjq/sliders/output-models/refine-2/santarosa/classifier_clean_split/clean_split_report.json
+Checkpoint: /home/xjtucxy/sjq/sliders/output-models/refine-2/santarosa/classifier_clean_split/best.pt

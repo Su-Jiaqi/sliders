@@ -1,0 +1,9 @@
+train n=277 test n=92 feature_dim=1024
+[train CV] chosen alpha=100  Spearman rho=0.747 (p=1.12e-50)
+
+=== HELD-OUT TEST (touched once) ===
+probe: output-models/classifier/socalfire_cls_real_fresh/best.pt
+Spearman rho = 0.829 (p=1.87e-24)
+bootstrap 95% CI on rho = [0.757, 0.870] (mean=0.823, n_boot=2000)
+R^2 = 0.792
+n_test = 92

@@ -1,0 +1,9 @@
+train n=366 test n=103 feature_dim=1024
+[train CV] chosen alpha=316.2  Spearman rho=0.631 (p=4.00e-42)
+
+=== HELD-OUT TEST (touched once) ===
+probe: ImageNet-only
+Spearman rho = 0.539 (p=4.43e-09)
+bootstrap 95% CI on rho = [0.382, 0.675] (mean=0.535, n_boot=2000)
+R^2 = 0.265
+n_test = 103

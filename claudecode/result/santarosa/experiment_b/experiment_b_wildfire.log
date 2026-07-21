@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=17
+High-real-severity group (S_real>0): n=29
+
+Fitted probe on 71 real train images. alpha=31.62
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/santarosa/test ===
+  scale=    0  low_mean=1.174 [0.995,1.342]  high_mean=1.566 [1.425,1.694]  concordance=0.799 (n_pairs=493, p=5.60e-43)
+  scale= 0.25  low_mean=1.224 [1.023,1.412]  high_mean=1.572 [1.441,1.701]  concordance=0.781 (n_pairs=493, p=8.57e-38)
+  scale=  0.3  low_mean=1.212 [1.011,1.412]  high_mean=1.562 [1.432,1.690]  concordance=0.775 (n_pairs=493, p=3.70e-36)
+  scale=  0.5  low_mean=1.217 [1.014,1.410]  high_mean=1.528 [1.388,1.664]  concordance=0.769 (n_pairs=493, p=1.44e-34)
+  scale=  0.7  low_mean=1.200 [1.007,1.392]  high_mean=1.513 [1.367,1.651]  concordance=0.767 (n_pairs=493, p=4.76e-34)
+  scale= 0.75  low_mean=1.208 [1.013,1.403]  high_mean=1.518 [1.369,1.657]  concordance=0.757 (n_pairs=493, p=1.60e-31)
+  scale=    1  low_mean=1.200 [0.994,1.400]  high_mean=1.514 [1.367,1.653]  concordance=0.751 (n_pairs=493, p=4.62e-30)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/santarosa/test ===
+  scale=    0  low_mean=1.015 [0.758,1.266]  high_mean=1.466 [1.342,1.593]  concordance=0.746 (n_pairs=493, p=4.11e-29)
+  scale= 0.25  low_mean=1.069 [0.814,1.303]  high_mean=1.490 [1.355,1.627]  concordance=0.757 (n_pairs=493, p=1.60e-31)
+  scale=  0.3  low_mean=1.080 [0.834,1.309]  high_mean=1.499 [1.363,1.635]  concordance=0.753 (n_pairs=493, p=1.52e-30)
+  scale=  0.5  low_mean=1.063 [0.827,1.284]  high_mean=1.527 [1.378,1.681]  concordance=0.765 (n_pairs=493, p=1.56e-33)
+  scale=  0.7  low_mean=1.070 [0.840,1.299]  high_mean=1.583 [1.411,1.757]  concordance=0.761 (n_pairs=493, p=1.62e-32)
+  scale= 0.75  low_mean=1.080 [0.858,1.301]  high_mean=1.605 [1.429,1.785]  concordance=0.765 (n_pairs=493, p=1.56e-33)
+  scale=    1  low_mean=1.080 [0.854,1.309]  high_mean=1.546 [1.355,1.741]  concordance=0.706 (n_pairs=493, p=1.33e-20)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/santarosa/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/santarosa/experiment_b/pairwise_concordance.csv

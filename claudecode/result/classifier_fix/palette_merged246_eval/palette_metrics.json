@@ -1,0 +1,31 @@
+{
+  "data_root": "/home/xjtucxy/sjq/sliders/datasets/remote/socalfire",
+  "test_result_dir": "/home/xjtucxy/sjq/sliders/outputs/baselines/palette/test_socalfire_epoch40_merged_246/test/0",
+  "train_result_dir": "/home/xjtucxy/sjq/sliders/outputs/baselines/palette/test_palette_socalfire_epoch40_trainsplit_260421_185109/results/test/0",
+  "metric_size": 256,
+  "feat_size": 224,
+  "rows": [
+    {
+      "split": "test",
+      "n_matched": 246,
+      "lpips": 0.6016213944772395,
+      "ssim": 0.3212978298801541,
+      "psnr": 16.26900418267178,
+      "fid": null,
+      "clip_i": 0.758083951424777,
+      "dino_i": 0.3982519280862033,
+      "cas_accuracy": 0.991869918699187
+    },
+    {
+      "split": "train",
+      "n_matched": 692,
+      "lpips": 0.6116234586934823,
+      "ssim": 0.31339903834960225,
+      "psnr": 15.936750307160322,
+      "fid": null,
+      "clip_i": 0.7467486226145242,
+      "dino_i": 0.38021199379353166,
+      "cas_accuracy": 0.9956647398843931
+    }
+  ]
+}

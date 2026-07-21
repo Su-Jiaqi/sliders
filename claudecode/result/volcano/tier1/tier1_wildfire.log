@@ -1,0 +1,11 @@
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+train n=14 test n=3 feature_dim=1024
+[train CV] chosen alpha=1e+04  Spearman rho=-0.041 (p=8.89e-01)
+
+=== HELD-OUT TEST (touched once) ===
+probe: output-models/classifier/socalfire_cls_real_fresh/best.pt
+Spearman rho = 0.866 (p=3.33e-01)
+bootstrap 95% CI on rho = [0.866, 1.000] (mean=0.954, n_boot=2000)
+R^2 = -0.277
+n_test = 3

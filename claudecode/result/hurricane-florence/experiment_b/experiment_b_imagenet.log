@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=34
+High-real-severity group (S_real>0): n=58
+
+Fitted probe on 277 real train images. alpha=100
+probe backbone: ImageNet-only
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/hurricane-florence/test ===
+  scale=    0  low_mean=0.378 [0.280,0.472]  high_mean=0.534 [0.450,0.623]  concordance=0.618 (n_pairs=1972, p=5.65e-26)
+  scale= 0.25  low_mean=0.437 [0.336,0.537]  high_mean=0.576 [0.498,0.661]  concordance=0.609 (n_pairs=1972, p=2.38e-22)
+  scale=  0.3  low_mean=0.446 [0.341,0.548]  high_mean=0.589 [0.510,0.673]  concordance=0.611 (n_pairs=1972, p=2.51e-23)
+  scale=  0.5  low_mean=0.476 [0.366,0.584]  high_mean=0.603 [0.523,0.685]  concordance=0.589 (n_pairs=1972, p=1.64e-15)
+  scale=  0.7  low_mean=0.492 [0.378,0.605]  high_mean=0.618 [0.537,0.702]  concordance=0.586 (n_pairs=1972, p=9.85e-15)
+  scale= 0.75  low_mean=0.495 [0.380,0.607]  high_mean=0.620 [0.538,0.704]  concordance=0.582 (n_pairs=1972, p=1.55e-13)
+  scale=    1  low_mean=0.490 [0.380,0.599]  high_mean=0.616 [0.533,0.701]  concordance=0.586 (n_pairs=1972, p=9.85e-15)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/hurricane-florence/test ===
+  scale=    0  low_mean=0.443 [0.347,0.538]  high_mean=0.534 [0.448,0.623]  concordance=0.571 (n_pairs=1972, p=1.56e-10)
+  scale= 0.25  low_mean=0.485 [0.392,0.576]  high_mean=0.595 [0.514,0.683]  concordance=0.578 (n_pairs=1972, p=2.96e-12)
+  scale=  0.3  low_mean=0.492 [0.398,0.582]  high_mean=0.612 [0.530,0.700]  concordance=0.592 (n_pairs=1972, p=1.23e-16)
+  scale=  0.5  low_mean=0.528 [0.433,0.620]  high_mean=0.682 [0.597,0.771]  concordance=0.617 (n_pairs=1972, p=9.14e-26)
+  scale=  0.7  low_mean=0.580 [0.482,0.674]  high_mean=0.756 [0.663,0.853]  concordance=0.628 (n_pairs=1972, p=2.36e-30)
+  scale= 0.75  low_mean=0.599 [0.500,0.694]  high_mean=0.785 [0.690,0.884]  concordance=0.632 (n_pairs=1972, p=3.29e-32)
+  scale=    1  low_mean=0.575 [0.469,0.685]  high_mean=0.900 [0.789,1.010]  concordance=0.726 (n_pairs=1972, p=1.13e-92)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/hurricane-florence/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/hurricane-florence/experiment_b/pairwise_concordance.csv

@@ -1,0 +1,57 @@
+prompts_file: train/configs/prompts_xbd.yaml
+
+dataset:
+  root: datasets/remote/socalfire
+  pre_dir: "train/pre"
+  post_dir: "train/post"
+  image_size: 256
+  num_workers: 0
+
+pretrained_model:
+  name_or_path: "CompVis/stable-diffusion-v1-4"
+  v2: false
+  v_pred: false
+  clip_skip: null
+
+network:
+  rank: 16
+  alpha: 16.0
+  training_method: "full"
+
+train:
+  precision: "bf16"
+  noise_scheduler: "ddim"
+  iterations: 15000
+  batch_size: 1
+  lr: 5e-5
+  optimizer: "adamw"
+  lr_scheduler: "constant"
+  seed: 42
+
+  min_timestep: 50
+  max_timestep: 300
+
+  s_warmup_steps: 3000
+  s_endpoint_prob: 0.9
+
+  x0_loss_weight: 0.5
+  smoothness_weight: 1.0
+  smoothness_delta: 0.05
+
+  img_endpoint_loss_weight: 1.0
+  img_loss_type: "l1"
+  img_loss_start_step: 0
+
+save:
+  name: "socalfire_slider_ablation_smooth1"
+  path: output-models/train
+  per_steps: 500
+  precision: "float32"
+
+logging:
+  print_every: 10
+  use_wandb: false
+  verbose: false
+
+other:
+  use_xformers: true

@@ -1,0 +1,32 @@
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1874144689727473e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.182800559718089e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1006914490963027e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1362195095898642e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1220026863156818e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+Fitted probe on 366 real train images. alpha=562.3
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/socalfire/test ===
+  scale=    0  n=103  Spearman rho=+0.132 (p=1.85e-01)  95% CI=[-0.071, +0.326]  mean_Shat=0.286
+  scale= 0.25  n=103  Spearman rho=+0.098 (p=3.24e-01)  95% CI=[-0.097, +0.292]  mean_Shat=0.306
+  scale=  0.3  n=103  Spearman rho=+0.094 (p=3.47e-01)  95% CI=[-0.107, +0.284]  mean_Shat=0.313
+  scale=  0.5  n=103  Spearman rho=+0.115 (p=2.46e-01)  95% CI=[-0.085, +0.305]  mean_Shat=0.299
+  scale=  0.7  n=103  Spearman rho=+0.101 (p=3.12e-01)  95% CI=[-0.111, +0.295]  mean_Shat=0.272
+  scale= 0.75  n=103  Spearman rho=+0.077 (p=4.37e-01)  95% CI=[-0.134, +0.278]  mean_Shat=0.266
+  scale=    1  n=103  Spearman rho=+0.051 (p=6.10e-01)  95% CI=[-0.168, +0.253]  mean_Shat=0.249
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/refine-2/socalfire/test ===
+  scale=    0  n=103  Spearman rho=+0.176 (p=7.45e-02)  95% CI=[-0.034, +0.362]  mean_Shat=0.143
+  scale= 0.25  n=103  Spearman rho=+0.224 (p=2.29e-02)  95% CI=[+0.016, +0.399]  mean_Shat=0.190
+  scale=  0.3  n=103  Spearman rho=+0.235 (p=1.70e-02)  95% CI=[+0.031, +0.406]  mean_Shat=0.204
+  scale=  0.5  n=103  Spearman rho=+0.257 (p=8.65e-03)  95% CI=[+0.051, +0.427]  mean_Shat=0.296
+  scale=  0.7  n=103  Spearman rho=+0.252 (p=1.04e-02)  95% CI=[+0.060, +0.423]  mean_Shat=0.420
+  scale= 0.75  n=103  Spearman rho=+0.249 (p=1.13e-02)  95% CI=[+0.052, +0.421]  mean_Shat=0.449
+  scale=    1  n=103  Spearman rho=+0.393 (p=4.05e-05)  95% CI=[+0.202, +0.540]  mean_Shat=0.508
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/socalfire/experiment_a/experiment_a_results_wildfire_probe.csv

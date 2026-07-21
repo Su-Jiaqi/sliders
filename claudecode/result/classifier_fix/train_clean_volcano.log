@@ -1,0 +1,36 @@
+/home/xjtucxy/sjq/sliders/claudecode/code/classifier_fix/train_classifier_clean_split.py:137: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler() if device.type == "cuda" else None
+Using device: cuda:0
+Pool size: 30  ->  train=26  val=4
+Val class balance: pre=2 post=2
+Held-out TEST (touched only at the very end): n=8
+Train class counts (pre, post): [13.0, 13.0]  loss weights: [1.0, 1.0]
+Epoch 1/15 | train_loss=0.7738 train_acc=0.3846 | VAL_acc=0.5000
+  -> new best VAL checkpoint saved: val_acc=0.5000 (epoch 1)
+Epoch 2/15 | train_loss=0.7031 train_acc=0.5385 | VAL_acc=0.5000
+Epoch 3/15 | train_loss=0.6829 train_acc=0.5000 | VAL_acc=0.5000
+Epoch 4/15 | train_loss=0.6173 train_acc=0.7308 | VAL_acc=0.5000
+Epoch 5/15 | train_loss=0.5696 train_acc=0.6923 | VAL_acc=0.5000
+Epoch 6/15 | train_loss=0.5422 train_acc=0.8846 | VAL_acc=0.5000
+Epoch 7/15 | train_loss=0.5213 train_acc=0.8462 | VAL_acc=0.5000
+Epoch 8/15 | train_loss=0.4894 train_acc=0.9615 | VAL_acc=0.5000
+Epoch 9/15 | train_loss=0.4973 train_acc=0.9615 | VAL_acc=0.5000
+Epoch 10/15 | train_loss=0.4454 train_acc=1.0000 | VAL_acc=0.5000
+Epoch 11/15 | train_loss=0.4375 train_acc=0.9615 | VAL_acc=0.5000
+Epoch 12/15 | train_loss=0.4599 train_acc=0.9615 | VAL_acc=0.5000
+Epoch 13/15 | train_loss=0.4235 train_acc=1.0000 | VAL_acc=0.5000
+Epoch 14/15 | train_loss=0.4127 train_acc=0.9231 | VAL_acc=0.5000
+Epoch 15/15 | train_loss=0.4393 train_acc=0.9615 | VAL_acc=0.5000
+
+Training done. Best VAL acc=0.5000 at epoch 1
+
+=== HELD-OUT TEST (touched once, never used for selection) ===
+Test accuracy: 0.3750
+Confusion matrix (rows=true[pre,post], cols=pred[pre,post]):
+[[1 3]
+ [2 2]]
+  pre: P=0.333 R=0.250 F1=0.286
+  post: P=0.400 R=0.500 F1=0.444
+
+Wrote /home/xjtucxy/sjq/sliders/output-models/refine-2/volcano/classifier_clean_split/clean_split_report.json
+Checkpoint: /home/xjtucxy/sjq/sliders/output-models/refine-2/volcano/classifier_clean_split/best.pt

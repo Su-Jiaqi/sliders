@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=2
+High-real-severity group (S_real>0): n=1
+
+Fitted probe on 14 real train images. alpha=1e+04
+probe backbone: ImageNet-only
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/volcano/test ===
+  scale=    0  low_mean=0.139 [0.138,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale= 0.25  low_mean=0.140 [0.140,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale=  0.3  low_mean=0.140 [0.140,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale=  0.5  low_mean=0.140 [0.140,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.000 (n_pairs=2, p=1.00e+00)
+  scale=  0.7  low_mean=0.140 [0.140,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale= 0.75  low_mean=0.140 [0.140,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale=    1  low_mean=0.140 [0.139,0.140]  high_mean=0.140 [0.140,0.140]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/volcano/test ===
+  scale=    0  low_mean=0.137 [0.137,0.138]  high_mean=0.138 [0.138,0.138]  concordance=1.000 (n_pairs=2, p=2.50e-01)
+  scale= 0.25  low_mean=0.138 [0.138,0.138]  high_mean=0.138 [0.138,0.138]  concordance=1.000 (n_pairs=2, p=2.50e-01)
+  scale=  0.3  low_mean=0.138 [0.138,0.138]  high_mean=0.138 [0.138,0.138]  concordance=1.000 (n_pairs=2, p=2.50e-01)
+  scale=  0.5  low_mean=0.138 [0.138,0.138]  high_mean=0.138 [0.138,0.138]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+  scale=  0.7  low_mean=0.138 [0.138,0.138]  high_mean=0.138 [0.138,0.138]  concordance=0.000 (n_pairs=2, p=1.00e+00)
+  scale= 0.75  low_mean=0.138 [0.138,0.138]  high_mean=0.138 [0.138,0.138]  concordance=0.000 (n_pairs=2, p=1.00e+00)
+  scale=    1  low_mean=0.138 [0.137,0.138]  high_mean=0.138 [0.138,0.138]  concordance=0.500 (n_pairs=2, p=7.50e-01)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/volcano/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/volcano/experiment_b/pairwise_concordance.csv

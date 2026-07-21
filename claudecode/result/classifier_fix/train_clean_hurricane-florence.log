@@ -1,0 +1,43 @@
+/home/xjtucxy/sjq/sliders/claudecode/code/classifier_fix/train_classifier_clean_split.py:137: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler() if device.type == "cuda" else None
+Using device: cuda:0
+Pool size: 584  ->  train=496  val=88
+Val class balance: pre=44 post=44
+Held-out TEST (touched only at the very end): n=194
+Train class counts (pre, post): [248.0, 248.0]  loss weights: [1.0, 1.0]
+Epoch 1/15 | train_loss=0.6418 train_acc=0.6532 | VAL_acc=0.7273
+  -> new best VAL checkpoint saved: val_acc=0.7273 (epoch 1)
+Epoch 2/15 | train_loss=0.4556 train_acc=0.8649 | VAL_acc=0.7614
+  -> new best VAL checkpoint saved: val_acc=0.7614 (epoch 2)
+Epoch 3/15 | train_loss=0.2754 train_acc=0.9294 | VAL_acc=0.7955
+  -> new best VAL checkpoint saved: val_acc=0.7955 (epoch 3)
+Epoch 4/15 | train_loss=0.1855 train_acc=0.9435 | VAL_acc=0.8864
+  -> new best VAL checkpoint saved: val_acc=0.8864 (epoch 4)
+Epoch 5/15 | train_loss=0.1198 train_acc=0.9657 | VAL_acc=0.8977
+  -> new best VAL checkpoint saved: val_acc=0.8977 (epoch 5)
+Epoch 6/15 | train_loss=0.0996 train_acc=0.9657 | VAL_acc=0.8864
+Epoch 7/15 | train_loss=0.0814 train_acc=0.9758 | VAL_acc=0.9205
+  -> new best VAL checkpoint saved: val_acc=0.9205 (epoch 7)
+Epoch 8/15 | train_loss=0.0623 train_acc=0.9879 | VAL_acc=0.9318
+  -> new best VAL checkpoint saved: val_acc=0.9318 (epoch 8)
+Epoch 9/15 | train_loss=0.0684 train_acc=0.9798 | VAL_acc=0.9318
+Epoch 10/15 | train_loss=0.0680 train_acc=0.9738 | VAL_acc=0.9432
+  -> new best VAL checkpoint saved: val_acc=0.9432 (epoch 10)
+Epoch 11/15 | train_loss=0.0498 train_acc=0.9819 | VAL_acc=0.9432
+Epoch 12/15 | train_loss=0.0589 train_acc=0.9839 | VAL_acc=0.9432
+Epoch 13/15 | train_loss=0.0464 train_acc=0.9879 | VAL_acc=0.9432
+Epoch 14/15 | train_loss=0.0444 train_acc=0.9859 | VAL_acc=0.9432
+Epoch 15/15 | train_loss=0.0451 train_acc=0.9879 | VAL_acc=0.9432
+
+Training done. Best VAL acc=0.9432 at epoch 10
+
+=== HELD-OUT TEST (touched once, never used for selection) ===
+Test accuracy: 0.9536
+Confusion matrix (rows=true[pre,post], cols=pred[pre,post]):
+[[88  9]
+ [ 0 97]]
+  pre: P=1.000 R=0.907 F1=0.951
+  post: P=0.915 R=1.000 F1=0.956
+
+Wrote /home/xjtucxy/sjq/sliders/output-models/refine-2/hurricane-florence/classifier_clean_split/clean_split_report.json
+Checkpoint: /home/xjtucxy/sjq/sliders/output-models/refine-2/hurricane-florence/classifier_clean_split/best.pt

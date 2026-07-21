@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=37
+High-real-severity group (S_real>0): n=66
+
+Fitted probe on 366 real train images. alpha=316.2
+probe backbone: ImageNet-only
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/ablation-naive-interp/gen_endpoints/test ===
+  scale=    0  low_mean=0.323 [0.223,0.435]  high_mean=0.180 [0.096,0.260]  concordance=0.383 (n_pairs=2442, p=1.00e+00)
+  scale= 0.25  low_mean=0.300 [0.204,0.401]  high_mean=0.161 [0.074,0.240]  concordance=0.379 (n_pairs=2442, p=1.00e+00)
+  scale=  0.3  low_mean=0.294 [0.201,0.390]  high_mean=0.161 [0.072,0.240]  concordance=0.381 (n_pairs=2442, p=1.00e+00)
+  scale=  0.5  low_mean=0.276 [0.189,0.364]  high_mean=0.157 [0.074,0.234]  concordance=0.395 (n_pairs=2442, p=1.00e+00)
+  scale=  0.7  low_mean=0.263 [0.179,0.347]  high_mean=0.151 [0.067,0.226]  concordance=0.402 (n_pairs=2442, p=1.00e+00)
+  scale= 0.75  low_mean=0.259 [0.176,0.344]  high_mean=0.150 [0.069,0.224]  concordance=0.408 (n_pairs=2442, p=1.00e+00)
+  scale=    1  low_mean=0.244 [0.163,0.327]  high_mean=0.153 [0.078,0.223]  concordance=0.414 (n_pairs=2442, p=1.00e+00)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/ablation-naive-interp/real_endpoints/test ===
+  scale=    0  low_mean=0.323 [0.223,0.435]  high_mean=0.180 [0.096,0.260]  concordance=0.383 (n_pairs=2442, p=1.00e+00)
+  scale= 0.25  low_mean=0.428 [0.307,0.551]  high_mean=0.399 [0.301,0.493]  concordance=0.480 (n_pairs=2442, p=9.75e-01)
+  scale=  0.3  low_mean=0.456 [0.329,0.587]  high_mean=0.465 [0.367,0.562]  concordance=0.502 (n_pairs=2442, p=4.12e-01)
+  scale=  0.5  low_mean=0.554 [0.407,0.713]  high_mean=0.724 [0.612,0.831]  concordance=0.613 (n_pairs=2442, p=3.31e-29)
+  scale=  0.7  low_mean=0.560 [0.393,0.737]  high_mean=0.883 [0.764,0.991]  concordance=0.684 (n_pairs=2442, p=1.23e-75)
+  scale= 0.75  low_mean=0.565 [0.397,0.748]  high_mean=0.915 [0.793,1.023]  concordance=0.692 (n_pairs=2442, p=7.25e-83)
+  scale=    1  low_mean=0.604 [0.426,0.798]  high_mean=1.061 [0.942,1.174]  concordance=0.738 (n_pairs=2442, p=2.44e-127)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/naive_interp_eval/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/naive_interp_eval/experiment_b/pairwise_concordance.csv

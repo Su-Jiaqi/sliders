@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=34
+High-real-severity group (S_real>0): n=58
+
+Fitted probe on 277 real train images. alpha=100
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/hurricane-florence/test ===
+  scale=    0  low_mean=0.206 [0.117,0.300]  high_mean=0.327 [0.244,0.419]  concordance=0.597 (n_pairs=1972, p=3.77e-18)
+  scale= 0.25  low_mean=0.262 [0.172,0.360]  high_mean=0.373 [0.294,0.461]  concordance=0.592 (n_pairs=1972, p=1.23e-16)
+  scale=  0.3  low_mean=0.278 [0.184,0.376]  high_mean=0.379 [0.301,0.465]  concordance=0.578 (n_pairs=1972, p=2.96e-12)
+  scale=  0.5  low_mean=0.267 [0.180,0.362]  high_mean=0.379 [0.299,0.463]  concordance=0.592 (n_pairs=1972, p=1.79e-16)
+  scale=  0.7  low_mean=0.264 [0.176,0.364]  high_mean=0.371 [0.294,0.454]  concordance=0.595 (n_pairs=1972, p=1.81e-17)
+  scale= 0.75  low_mean=0.267 [0.182,0.365]  high_mean=0.374 [0.297,0.455]  concordance=0.595 (n_pairs=1972, p=1.81e-17)
+  scale=    1  low_mean=0.257 [0.170,0.357]  high_mean=0.367 [0.293,0.448]  concordance=0.599 (n_pairs=1972, p=5.06e-19)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/hurricane-florence/test ===
+  scale=    0  low_mean=0.208 [0.123,0.297]  high_mean=0.291 [0.217,0.371]  concordance=0.573 (n_pairs=1972, p=4.77e-11)
+  scale= 0.25  low_mean=0.198 [0.102,0.295]  high_mean=0.343 [0.263,0.426]  concordance=0.634 (n_pairs=1972, p=3.69e-33)
+  scale=  0.3  low_mean=0.202 [0.110,0.299]  high_mean=0.370 [0.290,0.454]  concordance=0.655 (n_pairs=1972, p=4.65e-44)
+  scale=  0.5  low_mean=0.246 [0.161,0.331]  high_mean=0.481 [0.395,0.573]  concordance=0.716 (n_pairs=1972, p=1.96e-84)
+  scale=  0.7  low_mean=0.308 [0.223,0.394]  high_mean=0.591 [0.502,0.681]  concordance=0.746 (n_pairs=1972, p=1.75e-110)
+  scale= 0.75  low_mean=0.319 [0.229,0.408]  high_mean=0.622 [0.531,0.715]  concordance=0.754 (n_pairs=1972, p=4.02e-118)
+  scale=    1  low_mean=0.364 [0.266,0.468]  high_mean=0.825 [0.717,0.941]  concordance=0.803 (n_pairs=1972, p=3.33e-171)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/hurricane-florence/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/hurricane-florence/experiment_b/pairwise_concordance.csv

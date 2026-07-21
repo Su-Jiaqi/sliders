@@ -1,0 +1,95 @@
+{
+  "infer_root": "/home/xjtucxy/sjq/sliders/outputs/ablation-smooth/smooth0",
+  "data_root": "/home/xjtucxy/sjq/sliders/datasets/remote/socalfire",
+  "splits": [
+    "test"
+  ],
+  "metric_size": 256,
+  "feat_size": 224,
+  "rows": [
+    {
+      "split": "test",
+      "scale": "scale0",
+      "n_matched": 246,
+      "lpips": 0.3334964398688417,
+      "ssim": 0.4430718736032075,
+      "psnr": 21.476751709158908,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.676829268292683
+    },
+    {
+      "split": "test",
+      "scale": "scale0.25",
+      "n_matched": 246,
+      "lpips": 0.3396336414767959,
+      "ssim": 0.4496482198812815,
+      "psnr": 21.572497554117522,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.6707317073170732
+    },
+    {
+      "split": "test",
+      "scale": "scale0.3",
+      "n_matched": 246,
+      "lpips": 0.33971868785537357,
+      "ssim": 0.45105277195551546,
+      "psnr": 21.59515185993827,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.6626016260162602
+    },
+    {
+      "split": "test",
+      "scale": "scale0.5",
+      "n_matched": 246,
+      "lpips": 0.3327940186349357,
+      "ssim": 0.45141636709210775,
+      "psnr": 21.5942413004402,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.6808943089430894
+    },
+    {
+      "split": "test",
+      "scale": "scale0.7",
+      "n_matched": 246,
+      "lpips": 0.32756017763319056,
+      "ssim": 0.4491187930370768,
+      "psnr": 21.557690671512006,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.6869918699186992
+    },
+    {
+      "split": "test",
+      "scale": "scale0.75",
+      "n_matched": 246,
+      "lpips": 0.3268183730845529,
+      "ssim": 0.44856195383109293,
+      "psnr": 21.54931076757685,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.6910569105691057
+    },
+    {
+      "split": "test",
+      "scale": "scale1",
+      "n_matched": 246,
+      "lpips": 0.32513611724342756,
+      "ssim": 0.44611725635913313,
+      "psnr": 21.510914107894095,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.7012195121951219
+    }
+  ]
+}

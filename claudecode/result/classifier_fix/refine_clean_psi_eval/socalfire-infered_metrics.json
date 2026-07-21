@@ -1,0 +1,23 @@
+{
+  "infer_root": "/home/xjtucxy/sjq/sliders/outputs/refine-clean-psi/socalfire",
+  "data_root": "/home/xjtucxy/sjq/sliders/datasets/remote/socalfire",
+  "splits": [
+    "test"
+  ],
+  "metric_size": 256,
+  "feat_size": 224,
+  "rows": [
+    {
+      "split": "test",
+      "scale": "scale1",
+      "n_matched": 246,
+      "lpips": 0.2187837472533792,
+      "ssim": 0.582587141067644,
+      "psnr": 23.467584429136934,
+      "fid": null,
+      "clip_i": null,
+      "dino_i": null,
+      "cas_accuracy": 0.9939024390243902
+    }
+  ]
+}

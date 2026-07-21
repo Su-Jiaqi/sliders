@@ -1,0 +1,4 @@
+High-severity (S_real>=2.0) test pairs, n=22
+model             n     LPIPS      SSIM      PSNR
+production       22    0.2104    0.5842     23.92
+calibrated       22    0.2169    0.5791     23.78

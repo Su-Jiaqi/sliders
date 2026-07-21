@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=37
+High-real-severity group (S_real>0): n=66
+
+Fitted probe on 366 real train images. alpha=562.3
+probe backbone: output-models/classifier/socalfire_cls_clean_split/best.pt
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/socalfire/test ===
+  scale=    0  low_mean=0.307 [0.248,0.363]  high_mean=0.336 [0.294,0.376]  concordance=0.514 (n_pairs=2442, p=8.13e-02)
+  scale= 0.25  low_mean=0.321 [0.262,0.379]  high_mean=0.354 [0.313,0.396]  concordance=0.516 (n_pairs=2442, p=5.49e-02)
+  scale=  0.3  low_mean=0.323 [0.264,0.382]  high_mean=0.357 [0.316,0.401]  concordance=0.511 (n_pairs=2442, p=1.42e-01)
+  scale=  0.5  low_mean=0.292 [0.230,0.355]  high_mean=0.343 [0.302,0.385]  concordance=0.540 (n_pairs=2442, p=3.94e-05)
+  scale=  0.7  low_mean=0.274 [0.209,0.340]  high_mean=0.322 [0.278,0.366]  concordance=0.546 (n_pairs=2442, p=2.60e-06)
+  scale= 0.75  low_mean=0.271 [0.206,0.335]  high_mean=0.319 [0.273,0.364]  concordance=0.544 (n_pairs=2442, p=6.70e-06)
+  scale=    1  low_mean=0.266 [0.199,0.332]  high_mean=0.303 [0.256,0.349]  concordance=0.526 (n_pairs=2442, p=5.70e-03)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/socalfire/test ===
+  scale=    0  low_mean=0.136 [0.062,0.209]  high_mean=0.209 [0.150,0.269]  concordance=0.570 (n_pairs=2442, p=2.40e-12)
+  scale= 0.25  low_mean=0.183 [0.096,0.264]  high_mean=0.263 [0.203,0.327]  concordance=0.557 (n_pairs=2442, p=7.94e-09)
+  scale=  0.3  low_mean=0.194 [0.102,0.277]  high_mean=0.278 [0.217,0.343]  concordance=0.556 (n_pairs=2442, p=2.02e-08)
+  scale=  0.5  low_mean=0.263 [0.163,0.357]  high_mean=0.377 [0.309,0.452]  concordance=0.590 (n_pairs=2442, p=2.61e-19)
+  scale=  0.7  low_mean=0.380 [0.262,0.493]  high_mean=0.505 [0.428,0.591]  concordance=0.588 (n_pairs=2442, p=1.12e-18)
+  scale= 0.75  low_mean=0.414 [0.292,0.532]  high_mean=0.533 [0.453,0.621]  concordance=0.583 (n_pairs=2442, p=1.50e-16)
+  scale=    1  low_mean=0.450 [0.311,0.595]  high_mean=0.647 [0.549,0.746]  concordance=0.633 (n_pairs=2442, p=3.73e-40)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/experiment_b_socalfire_cleanwildfire_probe/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/experiment_b_socalfire_cleanwildfire_probe/pairwise_concordance.csv

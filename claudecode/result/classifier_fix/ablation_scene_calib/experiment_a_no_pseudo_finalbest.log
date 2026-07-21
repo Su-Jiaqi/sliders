@@ -1,0 +1,22 @@
+Fitted probe on 366 real train images. alpha=316.2
+probe backbone: ImageNet-only
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/socalfire/test ===
+  scale=    0  n=103  Spearman rho=-0.040 (p=6.87e-01)  95% CI=[-0.233, +0.147]  mean_Shat=0.431
+  scale= 0.25  n=103  Spearman rho=-0.064 (p=5.22e-01)  95% CI=[-0.253, +0.127]  mean_Shat=0.441
+  scale=  0.3  n=103  Spearman rho=-0.046 (p=6.45e-01)  95% CI=[-0.238, +0.139]  mean_Shat=0.444
+  scale=  0.5  n=103  Spearman rho=-0.022 (p=8.27e-01)  95% CI=[-0.223, +0.174]  mean_Shat=0.387
+  scale=  0.7  n=103  Spearman rho=-0.021 (p=8.30e-01)  95% CI=[-0.229, +0.172]  mean_Shat=0.343
+  scale= 0.75  n=103  Spearman rho=-0.021 (p=8.31e-01)  95% CI=[-0.227, +0.175]  mean_Shat=0.337
+  scale=    1  n=103  Spearman rho=-0.014 (p=8.88e-01)  95% CI=[-0.222, +0.179]  mean_Shat=0.310
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/ablation-2/socalfire/no_pseudo_finalbest/test ===
+  scale=    0  n=103  Spearman rho=-0.104 (p=2.95e-01)  95% CI=[-0.307, +0.101]  mean_Shat=0.306
+  scale= 0.25  n=103  Spearman rho=+0.400 (p=2.84e-05)  95% CI=[+0.215, +0.556]  mean_Shat=0.808
+  scale=  0.3  n=103  Spearman rho=+0.406 (p=2.11e-05)  95% CI=[+0.222, +0.564]  mean_Shat=0.809
+  scale=  0.5  n=103  Spearman rho=+0.412 (p=1.57e-05)  95% CI=[+0.226, +0.567]  mean_Shat=0.805
+  scale=  0.7  n=103  Spearman rho=+0.421 (p=9.36e-06)  95% CI=[+0.239, +0.575]  mean_Shat=0.799
+  scale= 0.75  n=103  Spearman rho=+0.418 (p=1.13e-05)  95% CI=[+0.235, +0.571]  mean_Shat=0.798
+  scale=    1  n=103  Spearman rho=+0.417 (p=1.18e-05)  95% CI=[+0.234, +0.575]  mean_Shat=0.799
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/classifier_fix/ablation_scene_calib/experiment_a_no_pseudo_finalbest.csv

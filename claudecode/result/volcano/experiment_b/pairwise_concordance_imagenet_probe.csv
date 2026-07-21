@@ -1,0 +1,15 @@
+variant,scale,n_low,n_high,n_pairs,n_concordant,concordance_rate,p_value
+unrefined,0,2,1,2,1,0.5,0.75
+unrefined,0.25,2,1,2,1,0.5,0.75
+unrefined,0.3,2,1,2,1,0.5,0.75
+unrefined,0.5,2,1,2,0,0.0,1.0
+unrefined,0.7,2,1,2,1,0.5,0.75
+unrefined,0.75,2,1,2,1,0.5,0.75
+unrefined,1,2,1,2,1,0.5,0.75
+refined,0,2,1,2,2,1.0,0.25
+refined,0.25,2,1,2,2,1.0,0.25
+refined,0.3,2,1,2,2,1.0,0.25
+refined,0.5,2,1,2,1,0.5,0.75
+refined,0.7,2,1,2,0,0.0,1.0
+refined,0.75,2,1,2,0,0.0,1.0
+refined,1,2,1,2,1,0.5,0.75

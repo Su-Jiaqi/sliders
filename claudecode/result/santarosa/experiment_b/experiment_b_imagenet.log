@@ -1,0 +1,26 @@
+Low-real-severity group (S_real==0): n=17
+High-real-severity group (S_real>0): n=29
+
+Fitted probe on 71 real train images. alpha=177.8
+probe backbone: ImageNet-only
+
+=== unrefined: /home/xjtucxy/sjq/sliders/outputs/infer/santarosa/test ===
+  scale=    0  low_mean=1.608 [1.456,1.749]  high_mean=1.841 [1.750,1.929]  concordance=0.714 (n_pairs=493, p=3.64e-22)
+  scale= 0.25  low_mean=1.622 [1.458,1.770]  high_mean=1.875 [1.783,1.965]  concordance=0.732 (n_pairs=493, p=6.21e-26)
+  scale=  0.3  low_mean=1.617 [1.454,1.767]  high_mean=1.882 [1.789,1.971]  concordance=0.728 (n_pairs=493, p=4.59e-25)
+  scale=  0.5  low_mean=1.587 [1.418,1.739]  high_mean=1.882 [1.792,1.970]  concordance=0.742 (n_pairs=493, p=3.51e-28)
+  scale=  0.7  low_mean=1.568 [1.398,1.719]  high_mean=1.871 [1.782,1.961]  concordance=0.742 (n_pairs=493, p=3.51e-28)
+  scale= 0.75  low_mean=1.567 [1.399,1.717]  high_mean=1.871 [1.783,1.961]  concordance=0.746 (n_pairs=493, p=4.11e-29)
+  scale=    1  low_mean=1.566 [1.393,1.718]  high_mean=1.870 [1.783,1.960]  concordance=0.738 (n_pairs=493, p=2.87e-27)
+
+=== refined: /home/xjtucxy/sjq/sliders/outputs/refine-2/santarosa/test ===
+  scale=    0  low_mean=1.436 [1.302,1.564]  high_mean=1.771 [1.703,1.841]  concordance=0.844 (n_pairs=493, p=1.40e-57)
+  scale= 0.25  low_mean=1.463 [1.329,1.594]  high_mean=1.796 [1.718,1.870]  concordance=0.817 (n_pairs=493, p=1.32e-48)
+  scale=  0.3  low_mean=1.475 [1.335,1.610]  high_mean=1.801 [1.724,1.876]  concordance=0.797 (n_pairs=493, p=2.22e-42)
+  scale=  0.5  low_mean=1.522 [1.369,1.669]  high_mean=1.845 [1.766,1.921]  concordance=0.769 (n_pairs=493, p=1.44e-34)
+  scale=  0.7  low_mean=1.589 [1.423,1.748]  high_mean=1.909 [1.826,1.988]  concordance=0.759 (n_pairs=493, p=5.12e-32)
+  scale= 0.75  low_mean=1.603 [1.431,1.765]  high_mean=1.924 [1.838,2.006]  concordance=0.748 (n_pairs=493, p=1.39e-29)
+  scale=    1  low_mean=1.609 [1.438,1.772]  high_mean=1.940 [1.840,2.037]  concordance=0.746 (n_pairs=493, p=4.11e-29)
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/santarosa/experiment_b/group_ceiling_curves.csv
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/santarosa/experiment_b/pairwise_concordance.csv

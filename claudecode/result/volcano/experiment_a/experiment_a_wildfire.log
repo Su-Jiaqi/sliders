@@ -1,0 +1,50 @@
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+/home/xjtucxy/sjq/sliders/claudecode/code/common/severity_probe.py:102: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  rho, _ = spearmanr(y_true[idx], y_pred[idx])
+Fitted probe on 14 real train images. alpha=1e+04
+probe backbone: output-models/classifier/socalfire_cls_real_fresh/best.pt
+
+=== UNREFINED generation module: /home/xjtucxy/sjq/sliders/outputs/infer/volcano/test ===
+  scale=    0  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale= 0.25  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=  0.3  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=  0.5  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=  0.7  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale= 0.75  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=    1  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+
+=== REFINED (semantic-aware residual refiner): /home/xjtucxy/sjq/sliders/outputs/refine-2/volcano/test ===
+  scale=    0  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale= 0.25  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=  0.3  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.139
+  scale=  0.5  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.140
+  scale=  0.7  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.141
+  scale= 0.75  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.141
+  scale=    1  n=  3  Spearman rho=+0.866 (p=3.33e-01)  95% CI=[+0.866, +1.000]  mean_Shat=0.141
+
+Wrote /home/xjtucxy/sjq/sliders/claudecode/result/volcano/experiment_a/experiment_a_results_wildfire_probe.csv

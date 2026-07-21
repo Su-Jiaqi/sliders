@@ -1,0 +1,65 @@
+{
+  "split": "test",
+  "scales": [
+    "scale0",
+    "scale0.25",
+    "scale0.5",
+    "scale0.75",
+    "scale1"
+  ],
+  "rows": [
+    {
+      "variant": "w/o Refinement",
+      "scale0": 0.6524390243902439,
+      "scale0_n": 246,
+      "scale0.25": 0.6524390243902439,
+      "scale0.25_n": 246,
+      "scale0.5": 0.6544715447154471,
+      "scale0.5_n": 246,
+      "scale0.75": 0.6707317073170732,
+      "scale0.75_n": 246,
+      "scale1": 0.6849593495934959,
+      "scale1_n": 246
+    },
+    {
+      "variant": "w/o Scale-aware Refiner",
+      "scale0": 0.6869918699186992,
+      "scale0_n": 246,
+      "scale0.25": 0.7154471544715447,
+      "scale0.25_n": 246,
+      "scale0.5": 0.8943089430894309,
+      "scale0.5_n": 246,
+      "scale0.75": 0.975609756097561,
+      "scale0.75_n": 246,
+      "scale1": 0.983739837398374,
+      "scale1_n": 246
+    },
+    {
+      "variant": "w/o Pseudo Supervision",
+      "scale0": 0.6260162601626016,
+      "scale0_n": 246,
+      "scale0.25": 0.9898373983739838,
+      "scale0.25_n": 246,
+      "scale0.5": 0.9898373983739838,
+      "scale0.5_n": 246,
+      "scale0.75": 0.9898373983739838,
+      "scale0.75_n": 246,
+      "scale1": 0.9898373983739838,
+      "scale1_n": 246
+    },
+    {
+      "variant": "Ours",
+      "scale0": 0.6361788617886179,
+      "scale0_n": 246,
+      "scale0.25": 0.7378048780487805,
+      "scale0.25_n": 246,
+      "scale0.5": 0.9085365853658537,
+      "scale0.5_n": 246,
+      "scale0.75": 0.983739837398374,
+      "scale0.75_n": 246,
+      "scale1": 0.9878048780487805,
+      "scale1_n": 246
+    }
+  ],
+  "data_root": "/home/xjtucxy/sjq/sliders/datasets/remote/socalfire"
+}

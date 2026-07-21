@@ -1,0 +1,19 @@
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1874144689727473e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.182800559718089e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1006914490963027e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1362195095898642e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+/home/xjtucxy/miniconda3/lib/python3.13/site-packages/sklearn/linear_model/_ridge.py:265: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 1.1220026863156818e-07.
+  dual_coef = linalg.solve(K, y, assume_a="pos", overwrite_a=False)
+train n=366 test n=103 feature_dim=1024
+[train CV] chosen alpha=562.3  Spearman rho=0.643 (p=3.80e-44)
+
+=== HELD-OUT TEST (touched once) ===
+probe: output-models/classifier/socalfire_cls_real_fresh/best.pt
+Spearman rho = 0.646 (p=1.72e-13)
+bootstrap 95% CI on rho = [0.501, 0.761] (mean=0.640, n_boot=2000)
+R^2 = 0.346
+n_test = 103

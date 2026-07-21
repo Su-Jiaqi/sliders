@@ -1,0 +1,2 @@
+split,scale,n_matched,lpips,ssim,psnr,fid,clip_i,dino_i,cas_accuracy
+test,scale1,246,0.2187837472533792,0.582587141067644,23.467584429136934,,,,0.9939024390243902
