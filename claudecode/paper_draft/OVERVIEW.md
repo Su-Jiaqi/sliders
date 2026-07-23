@@ -363,3 +363,22 @@ statistics, all clean) + `table1_significance.md` top section (the one real find
   and naive-interp+refiner at every scale checked; both refined variants show a much
   steeper CAS jump between s=0.25→0.5 than the unrefined naive baseline, reinforcing
   that the refiner (not s-conditioning) drives the population-level trajectory shape.
+
+## Appendix cross-table discrepancy, 2026-07-24 (new, root-caused)
+
+**File**: `claudecode/paper_draft/appendix_table_consistency_20260724.md`.
+
+User found tab:app_refined_scale and tab:app_ablation_multiscale's "Ours" row
+disagree by 0.06-0.07 at every intermediate scale (only s=1 matches). Root cause
+found: **these two tables trace to two entirely different model runs**, not a
+classifier issue this time. tab:app_refined_scale exactly matches an April eval of
+`outputs/refine/socalfire` (an older, no-longer-existing-on-disk refiner iteration);
+tab:app_ablation_multiscale's "Ours" row matches the current production `refine-2`
+pipeline (`eval-full`, same source as Table 1's stale CAS). The old run's images are
+gone from this machine — cannot be reconciled further, only standardized going
+forward. **Fix: replace both tables' "Ours" row with the same, single source** —
+`table8_9_refined_socalfire.csv` / `table14_clean` (Phase 0's clean-classifier
+recompute on the current `refine-2` pipeline, confirmed internally consistent with
+each other): 0.25→0.7378, 0.5→0.9085, 0.75→0.9837, 1→0.9878. Same fix pattern as the
+Table 1 CAS finding — standardize on the current, reproducible pipeline + the
+confirmed leak-free classifier, everywhere "Ours"/RiskSlider CAS is cited.
