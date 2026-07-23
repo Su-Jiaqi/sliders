@@ -70,6 +70,57 @@ RiskSlider's actual 0.636/0.738/0.756/0.909/0.980/0.984/0.988 (Table 8/9 data) -
 **nearly identical**. CAS accuracy alone cannot distinguish these two very different
 pipelines; only the scene-level analysis reveals a difference.
 
+## Consolidated three-way comparison table (new, 2026-07-24, closes the C2-style gap)
+
+Filled in the missing LPIPS/DINO-I cells (previously only rho/concordance/CAS existed)
+by directly re-evaluating the already-generated naive-interpolation images
+(`outputs/ablation-naive-interp/gen_endpoints`, `outputs/ablation-naive-interp-refined/gen_endpoints`,
+both already on disk from the original experiment, no new generation needed) with
+`eval/socalfire_infered_eval_metrics.py`, using the same confirmed leak-free classifier
+(`socalfire_cls_clean_split`) as the Table 1 CAS fix above, so all three CAS columns
+here are on a consistent footing. RiskSlider-actual's numbers use the same clean
+classifier (LPIPS/DINO-I are classifier-independent, unaffected either way).
+
+| s | Method | CAS↑ | LPIPS↓ | DINO-I↑ | scene-level ρ (p) | concordance (p) |
+|---|---|---|---|---|---|---|
+| 0.25 | RiskSlider (actual) | 0.7378 | 0.2813 | 0.7350 | -0.055 (0.58) | 0.401 (~1) |
+| 0.25 | Naive interp (unrefined) | 0.6728 | 0.3135 | 0.6835 | -- | -- |
+| 0.25 | Naive interp + refiner | 0.7337 | 0.2810 | 0.7338 | -0.059 (0.55) | -- |
+| 0.5 | RiskSlider (actual) | 0.9085 | 0.2539 | 0.7637 | +0.015 (0.88) | 0.438 (~1) |
+| 0.5 | Naive interp (unrefined) | 0.7033 | 0.3177 | 0.6770 | -0.079 (0.43) | -- |
+| 0.5 | Naive interp + refiner | 0.9207 | 0.2527 | 0.7628 | +0.021 (0.83) | 0.435 (~1) |
+| 0.75 | RiskSlider (actual) | 0.9838 | 0.2296 | 0.7895 | +0.116 (0.24) | 0.497 (0.62) |
+| 0.75 | Naive interp (unrefined) | 0.7378 | 0.3208 | 0.6703 | -- | -- |
+| 0.75 | Naive interp + refiner | 0.9858 | 0.2287 | 0.7883 | +0.120 (0.23) | 0.498 (0.59) |
+
+("--" = not computed for that variant/scale in the original experiment design; scene-
+level ρ/concordance for the unrefined naive baseline were only run at s=1 in the
+original design, see Stage 1 above.)
+
+**Adjacent-scale smoothness** (Δ CAS between consecutive tested scales, all three
+variants monotonic/non-decreasing across 0.25→0.5→0.75, no backward steps):
+
+| Method | ΔCAS(0.25→0.5) | ΔCAS(0.5→0.75) |
+|---|---|---|
+| RiskSlider (actual) | +0.1707 | +0.0753 |
+| Naive interp (unrefined) | +0.0305 | +0.0345 |
+| Naive interp + refiner | +0.1870 | +0.0651 |
+
+**Reading this table**: LPIPS and DINO-I are essentially tied between RiskSlider's
+actual pipeline and naive-interp+refiner at every scale checked (differences in the
+2nd-3rd decimal) -- confirming, with two more metrics, the already-reported finding
+that population-level/pixel-level metrics cannot distinguish the two pipelines. The
+refiner is clearly what drives the steep CAS jump between 0.25 and 0.5 for both
+refined variants (RiskSlider +0.17, naive+refiner +0.19) versus the much gentler,
+still-positive climb for the unrefined naive baseline (+0.03) -- consistent with the
+paper's own framing that the refinement/pseudo-target-supervision stage, not
+s-conditioning per se, is the primary driver of the smooth population-level
+trajectory (see `lambda_smooth_ablation.md`'s full-pipeline check for the same
+conclusion from a different angle). The one place s-conditioning earns its keep is
+scene-level correlation at s=1 (already reported above: RiskSlider ρ=0.388 vs.
+naive+refiner ρ=0.272, both significant but RiskSlider's stronger) -- everywhere else
+in this table, s-conditioning is not distinguishable from naive interpolation.
+
 ## Honest conclusion
 
 **The rebuttal is real but modest, not overwhelming.** At intermediate scales

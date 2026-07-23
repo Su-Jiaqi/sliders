@@ -1,3 +1,103 @@
+## 🔴 CRITICAL, HIGHEST PRIORITY (found 2026-07-24): Table 1's CAS column mixes THREE different classifier checkpoints — must be replaced before submission
+
+This was found during a server-side audit triggered by an external reviewer's
+suggestion to double-check "is CAS consistent across Table 1's rows." It is NOT a new
+experiment — it is a provenance bug in numbers already sitting in the compiled PDF, and
+it is more urgent than any of the exploratory experiments discussed elsewhere in this
+directory (C1-C7 style ideas). **Read this before doing anything else with Table 1.**
+
+**What's wrong**: Table 1's CAS Accuracy column currently in the compiled PDF
+(`RiskSlider.pdf`, Table 1, page 6) is:
+
+| Method | Published CAS |
+|---|---|
+| ControlNet | 0.9980 |
+| Pix2Pix | 0.9919 |
+| CycleGAN | 0.9898 |
+| Palette | 0.9891 |
+| RiskSlider (Ours) | 0.9939 |
+
+These five numbers were **not all produced by the same classifier checkpoint**, which
+makes CAS Accuracy in the current Table 1 an apples-to-oranges comparison, not a single
+consistent metric:
+
+- ControlNet/Pix2Pix/CycleGAN/Palette's original CAS numbers trace to eval runs from
+  2026-04-21, using classifier checkpoint
+  `output-models/classifier/socalfire_cls_20260421_201243/best.pt` — **this is the
+  exact checkpoint Phase 0 (`claudecode/result/classifier_fix/SUMMARY.md`) flagged as
+  leaked** (best-checkpoint selected directly on the 246-pair test split,
+  `classifier/train.py:326`).
+- RiskSlider's published CAS (0.9939) traces to
+  `outputs/refine-2/socalfire/eval-full/socalfire-infered_metrics.csv` (dated
+  2026-05-03), which was scored with a **third, different classifier**:
+  `output-models/cas_cross_domain/socalfire_endpoint_formal/_shared_real_classifier/best.pt`
+  (created 2026-05-02, via `eval/cas_cross_domain/run_cross_domain_cas.py`). This
+  checkpoint is itself methodologically clean — I traced its training code
+  (`train_classifier` in that script) and confirmed it selects the best checkpoint via
+  held-out validation accuracy on an 80/20 split of the *train* pool only, never
+  touching the test set — so it is **not** the leaked checkpoint. But it is a
+  *different* classifier from both the leaked one (used for the 4 baselines) and
+  Phase 0's `socalfire_cls_clean_split` fix, so RiskSlider's row was never actually
+  scored by the same yardstick as any other row in the table, at any point in this
+  project's history.
+- Phase 0 (2026-07-17) already recomputed a fully-consistent CAS column — all five
+  methods scored by the same classifier, `socalfire_cls_clean_split` — see
+  `SUMMARY.md`'s "Leaked CAS / Clean CAS" table. **This consistent recomputation was
+  never applied to the actual Table 1 / PDF.** I directly re-verified RiskSlider's
+  clean-classifier number myself just now (re-running
+  `eval/socalfire_infered_eval_metrics.py` on the exact production folder
+  `outputs/refine-2/socalfire/test/scale1`, n=246, with
+  `socalfire_cls_clean_split/best.pt`): **0.9878048780487805**, matching SUMMARY.md's
+  Phase 0 number to 10 decimal places. This is the correct, defensible RiskSlider CAS
+  number — not 0.9939.
+
+**The correct, single-classifier CAS column for Table 1** (combining Phase 0's
+`socalfire_cls_clean_split` recompute with the already-resolved Palette n=246 fix
+below):
+
+| Method | Correct CAS (socalfire_cls_clean_split, consistent across all 5) |
+|---|---|
+| ControlNet | 0.9939 |
+| Palette | 0.9919 |
+| Pix2Pix | 0.9898 |
+| RiskSlider (Ours) | 0.9878 |
+| CycleGAN | 0.9837 |
+
+**This changes the paper's narrative, not just the numbers.** Under the currently
+published (inconsistent) column, RiskSlider's CAS (0.9939) reads as tied-for-best.
+Under the corrected, single-classifier column, **RiskSlider is 4th of 5** — beating
+only CycleGAN, and behind ControlNet/Palette/Pix2Pix. This is exactly the finding
+SUMMARY.md already flagged in its own words ("RiskSlider can no longer be framed as
+CAS-competitive") but it was apparently never carried through to the actual
+submission. LPIPS/SSIM/PSNR/FID/CLIP-I/DINO-I are unaffected (they don't depend on a
+classifier) — only the CAS column needs replacing. **Action: before submission,
+replace Table 1's entire CAS column with the table above, and adjust any prose that
+currently frames RiskSlider as winning or tying on CAS** — the honest framing is that
+RiskSlider wins decisively on structural fidelity (LPIPS/SSIM/PSNR, all p<1e-28) and
+semantic similarity against most baselines (CLIP-I/DINO-I, p<1e-7 except CycleGAN),
+but is not the best method by this particular classifier-based proxy metric.
+
+**Real-image reference point (new, pure eval, no generation involved)**: to
+contextualize how tight these CAS differences actually are, I directly evaluated
+`socalfire_cls_clean_split` on the genuine real test images
+(`datasets/remote/socalfire/test/{pre,post}`, n=492, ImageFolder-loaded via the same
+`classifier/train.py` utilities used for training) — this is the classifier's own
+ceiling, no generative model involved at all. Confusion matrix (rows=true, cols=pred,
+[pre,post]): `[[243,3],[2,244]]`, overall accuracy 0.98984. In particular, **real
+post-disaster photos are classified as "post" 244/246 = 0.9919 of the time** — this is
+the practical ceiling for the metric CAS is approximating at s=1. RiskSlider's
+generated s=1 images are classified as "post" 243/246 = 0.9878 of the time — a gap of
+exactly **one image out of 246** relative to genuine real photos. So while RiskSlider
+is 4th of 5 among the generative methods on this metric, it is essentially
+indistinguishable from real post-disaster imagery by the classifier's own standard;
+the entire competitive spread between all 5 methods (0.9837-0.9939) sits within about
+2-3 images of the real-image ceiling itself (0.9919), and CAS at s=1 is close to
+saturated for every method tested, real photos included. Useful honest context to pair
+with the "4th of 5" finding above — the ranking is real, but the absolute practical
+gap it reflects is tiny.
+
+---
+
 # Table 1 per-image paired significance — draft insert
 
 Insert location: footnote under Table 1, or one sentence in "Comparison with Baselines"

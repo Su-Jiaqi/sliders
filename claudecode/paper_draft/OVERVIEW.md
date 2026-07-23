@@ -19,6 +19,22 @@ submission" or a "new finding to write up honestly", and which file/data backs i
   (endpoint quality, refinement helps, pseudo-target supervision prevents collapse,
   cross-category monotonicity). Table 6 (Concept Slider) cannot be recomputed — no
   generations exist on this machine.
+- **🔴 NEW, 2026-07-24, NOT actually applied to the PDF — see `table1_significance.md`
+  top section for full detail**: the "all mechanical CAS recomputes complete" claim
+  above is true of the *documentation* (SUMMARY.md's Leaked/Clean tables exist and are
+  correct) but was never carried through into Table 1's actual published numbers.
+  Server-side audit found Table 1's current CAS column mixes **three different
+  classifier checkpoints** across its five rows: the four baselines trace to the
+  leaked checkpoint (`socalfire_cls_20260421_201243`), while RiskSlider's row
+  (published 0.9939) traces to yet another, separately-trained checkpoint
+  (`_shared_real_classifier`, from an unrelated cross-domain-CAS experiment) that
+  Phase 0 never touched. I re-verified directly: scoring the actual production
+  RiskSlider images with the confirmed leak-free classifier gives **0.9878**, not
+  0.9939. Replacing the whole column with one consistent classifier
+  (`socalfire_cls_clean_split`) gives: ControlNet 0.9939, Palette 0.9919, Pix2Pix
+  0.9898, **RiskSlider 0.9878**, CycleGAN 0.9837 — RiskSlider drops from
+  looking tied-for-best to **4th of 5**. This is a bigger, more urgent fix than
+  anything else in this file — do this before any other Table 1 edit.
 - **Important sub-finding**: Table 10/11 (cross-category) uses a *separate classifier
   trained per disaster category* (`output-models/refine-2/{category}/classifier_real_fresh/best.pt`),
   not the shared socalfire one — an initial attempt using the wrong (socalfire) classifier
@@ -166,6 +182,16 @@ the same way RiskSlider's own generation output is refined at inference time.
   (p=0.0055); concordance 65.2% (p=3.5e-52) vs. 59.9% (p=7.9e-23). Both reach
   significance, but RiskSlider's is meaningfully stronger (~43% higher correlation,
   5.3 points higher concordance).
+- **New, 2026-07-24**: filled in the previously-missing LPIPS/DINO-I cells (a C2-style
+  gap from the reviewer checklist) by re-evaluating the already-generated naive-interp
+  images with the confirmed leak-free classifier -- consolidated three-way table
+  (RiskSlider / naive-interp / naive-interp+refiner) at s=.25/.5/.75 now in
+  `naive_interpolation_rebuttal.md`. LPIPS/DINO-I are essentially tied between
+  RiskSlider-actual and naive-interp+refiner at every scale (2nd-3rd decimal), and
+  both refined variants show a much steeper CAS jump (0.25->0.5: +0.17/+0.19) than the
+  unrefined naive baseline (+0.03) -- reinforcing that the refiner, not s-conditioning,
+  drives the population-level trajectory shape; s-conditioning's one measurable edge
+  remains scene-level correlation at s=1 specifically.
 - At intermediate scales (0.5/0.7/0.75) the two are statistically indistinguishable
   -- neither shows significant scene-level calibration there, consistent with the
   already-documented intermediate-scale weakness.
@@ -290,3 +316,50 @@ calibrated scale sweep. Train+test full inference and refine pipeline completed.
   honest CycleGAN exception.
 - **Palette CLIP-I/DINO-I `nan`** (item 5): root-caused and fixed (broken HF
   checkpoint download path on this machine, not a code bug) — see item 5 above.
+
+## Server-side audit, 2026-07-24 (new)
+
+**File**: `claudecode/paper_draft/server_audit_20260724.md` (dataset/result/protocol/
+statistics, all clean) + `table1_significance.md` top section (the one real finding).
+
+- 🔴 **Highest-priority finding, do this before any other Table 1 edit**: Table 1's
+  CAS column currently mixes three different classifier checkpoints across its five
+  rows (the four baselines use the leaked checkpoint; RiskSlider's published 0.9939
+  uses yet another, unrelated checkpoint that Phase 0 never audited). The correct,
+  single-classifier column (re-verified directly): ControlNet 0.9939, Palette 0.9919,
+  Pix2Pix 0.9898, **RiskSlider 0.9878**, CycleGAN 0.9837 — RiskSlider drops from
+  looking tied-for-best to 4th of 5. Full detail in `table1_significance.md`.
+- Also added: a real-image CAS reference point (real post-disaster photos are
+  classified "post" 244/246=0.9919 of the time by the same clean classifier — the
+  practical ceiling for this metric) to contextualize how tight the 4th-of-5 gap
+  actually is.
+- Dataset, Table-1-provenance (minus CAS), training-protocol, and statistical-test
+  audits all came back clean — no other issues found. Confirmed via md5 hashing that
+  socalfire's train/test split is tile-disjoint by construction (inherits xBD's own
+  official partition), and confirmed each baseline's pretrained-vs-scratch status for
+  a fairness disclosure the paper should probably state explicitly.
+- Also confirmed (separate, lower-urgency, not yet acted on): SUMMARY.md's
+  recommendation to swap in a clean-ψ-trained refiner as the production f1 checkpoint
+  was never actually applied — production still uses the original refiner. This is
+  about *which refiner generates* the images, distinct from the CAS fix above (which
+  is about *which classifier scores* them).
+- **Dense-s continuity check (C1) — DONE, clean negative result**. File:
+  `claudecode/paper_draft/dense_s_continuity.md`. Generated 14 new scale points
+  (densest right at both boundaries: 0.01, 0.02, 0.05, ..., 0.95, 0.98, 0.99) with the
+  unchanged production checkpoints, combined with the 7 existing points for 21 total,
+  and checked adjacent-scale LPIPS/DINO-distance/ΔP(post)/residual-jump across all
+  246 test scenes. **No discontinuity at either s=0/0.01 or s=0.99/1.00** — both
+  boundaries are among the *smoothest* transitions in the whole trajectory, not the
+  roughest; even after normalizing by step size, the boundary "slopes" are 10-15x
+  gentler than the steepest region, which sits in the interior (s≈0.3-0.7, a normal
+  sigmoid-shaped classifier-probability transition). Consistent with the code-level
+  fact that neither the generator nor the refiner branches discretely on s anywhere —
+  both treat it as one continuous conditioning scalar.
+- **Naive-interpolation three-way table (C2 gap) — DONE**. File:
+  `naive_interpolation_rebuttal.md`, new "Consolidated three-way comparison table"
+  section. Filled in previously-missing LPIPS/DINO-I cells at s=.25/.5/.75 for
+  RiskSlider / naive-interp / naive-interp+refiner using already-generated images, no
+  new generation needed. LPIPS/DINO-I are essentially tied between RiskSlider-actual
+  and naive-interp+refiner at every scale checked; both refined variants show a much
+  steeper CAS jump between s=0.25→0.5 than the unrefined naive baseline, reinforcing
+  that the refiner (not s-conditioning) drives the population-level trajectory shape.
