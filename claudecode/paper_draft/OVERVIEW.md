@@ -419,22 +419,34 @@ new segmentation model / new training, see next section).
   measurable scene-level calibration advantage over naive interpolation** -- on this
   evidence it does not, anywhere on the tested scale range.
 
-## Not yet done (need new segmentation model or new training)
+## Structural consistency + SDEdit baseline — DONE, 2026-07-24
 
-- **Structural consistency metrics (building footprint IoU, road segmentation)**:
-  found that the original xBD dataset (under `datasets/DisasterDataset_extracted/`)
-  has pixel-space building-footprint polygon labels (`features.xy` in each image's
-  label JSON) -- useful, but still need an actual building detector/segmenter to
-  apply to *generated* images (no ground-truth polygons exist for synthetic images).
-  No segmentation package (segmentation_models_pytorch, detectron2, mmseg) is
-  installed on this machine, and torchvision's COCO-pretrained models don't have a
-  "building" class. Realistic path forward: train a lightweight U-Net-style building
-  segmenter using xBD's own polygon labels as supervision on real pre-disaster
-  images, then apply it to real vs. generated post-disaster images and compute IoU
-  at the same footprint locations. This is a real (if likely fast) training job --
-  not started, flagging for a scope/priority decision.
-- **Additional baselines**: SDEdit is training-free (partial-noise + denoise with
-  the pretrained SD backbone, no LoRA) and could be run quickly; the
-  same-backbone-no-progression-conditioning control (the C3 experiment from the
-  first reviewer-checklist pass) requires a full new LoRA training run -- not
-  started, same open resource-budget question as before.
+**File**: `claudecode/paper_draft/structural_consistency_and_sdedit_20260724.md`.
+
+- **Structural consistency (building footprint IoU)**: found xBD's own building
+  polygon labels, trained a lightweight U-Net building segmenter from scratch (no
+  pretrained segmentation package available on this machine), matched it to the
+  anonymized test set via md5 hashing, and computed IoU against ground truth on a
+  fixed, method-independent subset (n=108/246 scenes with >=1 real building).
+  **Caught and fixed a real rasterization bug** (coordinates scaled before drawing
+  on a still-full-resolution canvas, squeezing all buildings into one corner) --
+  visually verified against source imagery before trusting the masks. **Result:
+  RiskSlider (0.289) is essentially at parity with real post-disaster photos
+  (0.282)** -- clearly better than ControlNet/Pix2Pix/Palette/SDEdit. **CycleGAN is
+  again the one exception** (0.364, higher than even the real-image ceiling) --
+  another data point for the already-established "CycleGAN is RiskSlider's one
+  genuine structural-fidelity-adjacent competitor" framing.
+- **SDEdit baseline (training-free)**: partial-noise + denoise with the plain
+  pretrained SD v1.4 backbone (no LoRA, no learned conditioning), one endpoint-style
+  comparison. **Result: dramatically worse than every trained baseline** on
+  LPIPS/SSIM/PSNR/FID/CLIP-I/DINO-I (e.g. FID 651.55 vs. Palette's 434.47, the
+  current Table 1 worst) and equally poor on structural IoU. Directly answers "maybe
+  you don't need to fine-tune at all" -- on this evidence, fine-tuning does real,
+  necessary work.
+
+## Not yet done (needs new training)
+
+- **Same-backbone-no-progression-conditioning control**: the one remaining item
+  from the reviewer checklist requiring a full new LoRA training run (same SD v1.4
+  backbone/rank/alpha/steps, but endpoint-only, no severity conditioning) -- not
+  started, open resource-budget question.
