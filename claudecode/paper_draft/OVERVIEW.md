@@ -382,3 +382,59 @@ recompute on the current `refine-2` pipeline, confirmed internally consistent wi
 each other): 0.25→0.7378, 0.5→0.9085, 0.75→0.9837, 1→0.9878. Same fix pattern as the
 Table 1 CAS finding — standardize on the current, reproducible pipeline + the
 confirmed leak-free classifier, everywhere "Ours"/RiskSlider CAS is cited.
+
+## Second batch of reviewer-checklist items, 2026-07-24
+
+Five items requested; three done (pure eval / cheap generation), two remain (need
+new segmentation model / new training, see next section).
+
+- **Effect sizes + Holm correction (done)**. File: `table1_significance.md`, "Effect
+  sizes + Holm correction" section. All 20 per-image Wilcoxon tests (4 baselines x
+  LPIPS/SSIM/PSNR/CLIP-I/DINO-I) remain significant after Holm-Bonferroni correction
+  (worst case p_holm=1.18e-2). Effect sizes (rank-biserial r) are near-maximal
+  (|r|>0.98) for structural metrics against every baseline; CLIP-I/DINO-I effect
+  sizes are smaller and, for CycleGAN specifically, favor CycleGAN (r=-0.19/-0.35).
+- **FID/KID bootstrap CIs (done)**. File: `table1_significance.md`, "FID/KID
+  bootstrap confidence intervals" section. Caught and fixed a real bug in my own
+  first attempt (inconsistent PCA bases across a paired comparison, producing a
+  sign-inconsistent result for CycleGAN) before trusting or reporting it. Corrected
+  result: **RiskSlider's FID/KID edge over CycleGAN specifically is not
+  statistically significant** (paired-diff 95% CI straddles zero for both metrics) --
+  significant and decisive against the other three baselines. Recommend not claiming
+  an FID/KID win over CycleGAN specifically.
+- **Clean naive-interpolation rerun, no VAE round-trip confound (done) — reverses a
+  previous conclusion**. File: `naive_interpolation_rebuttal.md`, new "SUPERSEDING
+  UPDATE" section (the old "Honest conclusion" below it is now marked superseded,
+  not deleted, for the record). The original naive-interp baseline unnecessarily
+  VAE-round-tripped the s=0/s=1 endpoints even though those exactly equal existing
+  images with no interpolation needed. Reran with exact endpoints (no VAE pass) and
+  only genuinely-interpolated intermediate scales going through the VAE. **Result:
+  the previously-reported s=1 scene-level-correlation advantage for RiskSlider's
+  actual pipeline (0.388 vs. naive-interp+refiner's 0.272) disappears entirely** --
+  the clean naive-interp+refiner number is 0.388 (p=5.12e-5), statistically identical
+  to RiskSlider's own 0.388 (p=5.1e-5). This directly answers the paper's "we did not
+  have the opportunity to rerun before submission" sentence (appendices/06 line 63):
+  we did rerun it, and the s-conditioning advantage this sentence was hedging around
+  does not survive. **Recommend removing the claim that s-conditioning provides
+  measurable scene-level calibration advantage over naive interpolation** -- on this
+  evidence it does not, anywhere on the tested scale range.
+
+## Not yet done (need new segmentation model or new training)
+
+- **Structural consistency metrics (building footprint IoU, road segmentation)**:
+  found that the original xBD dataset (under `datasets/DisasterDataset_extracted/`)
+  has pixel-space building-footprint polygon labels (`features.xy` in each image's
+  label JSON) -- useful, but still need an actual building detector/segmenter to
+  apply to *generated* images (no ground-truth polygons exist for synthetic images).
+  No segmentation package (segmentation_models_pytorch, detectron2, mmseg) is
+  installed on this machine, and torchvision's COCO-pretrained models don't have a
+  "building" class. Realistic path forward: train a lightweight U-Net-style building
+  segmenter using xBD's own polygon labels as supervision on real pre-disaster
+  images, then apply it to real vs. generated post-disaster images and compute IoU
+  at the same footprint locations. This is a real (if likely fast) training job --
+  not started, flagging for a scope/priority decision.
+- **Additional baselines**: SDEdit is training-free (partial-noise + denoise with
+  the pretrained SD backbone, no LoRA) and could be run quickly; the
+  same-backbone-no-progression-conditioning control (the C3 experiment from the
+  first reviewer-checklist pass) requires a full new LoRA training run -- not
+  started, same open resource-budget question as before.

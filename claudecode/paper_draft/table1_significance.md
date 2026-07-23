@@ -240,3 +240,73 @@ metrics where RiskSlider wins.
   across all five methods at n=246. **Action for the paper**: replace Table 1's
   Palette row with the corrected numbers above (FID especially, since 472.78
   is the exact number currently in the submitted/drafted table).
+
+## Effect sizes + Holm correction for the per-image Wilcoxon tests (done, 2026-07-24)
+
+The per-image Wilcoxon tests above (LPIPS/SSIM/PSNR/CLIP-I/DINO-I x 4 baselines = 20
+tests) reported only p-values, with no effect size and no multiple-comparison
+correction. Added both: median paired difference, rank-biserial correlation r
+(Kerby 2014: r = (W+ - W-)/(W+ + W-), the standard effect size for the Wilcoxon
+signed-rank test), and Holm-Bonferroni step-down correction across the full 20-test
+family. Script: `claudecode/code/classifier_fix/table1_effect_sizes.py`. Full data:
+`claudecode/result/classifier_fix/table1_effect_sizes.csv`.
+
+**Result: every one of the 20 tests remains significant after Holm correction** (the
+weakest, CycleGAN vs. CLIP-I, p_holm=1.18e-2). Effect sizes are large (|r| > 0.98) for
+LPIPS/SSIM/PSNR against every baseline including CycleGAN -- the structural-fidelity
+advantage is not just statistically significant but a near-maximal, near-unanimous
+per-image effect (r close to ±1 means almost every single paired comparison favors
+RiskSlider in the same direction). CLIP-I/DINO-I effect sizes are more modest and vary
+by baseline: large against ControlNet/Palette (r≈0.98-1.0), moderate against Pix2Pix
+(r=0.40-0.50), and small-to-moderate *against* RiskSlider for CycleGAN specifically
+(r=-0.185 for CLIP-I, r=-0.346 for DINO-I) -- consistent with, and now quantifying,
+the already-documented CycleGAN exception on these two metrics.
+
+## FID/KID bootstrap confidence intervals (done, 2026-07-24)
+
+Addresses whether Table 1's FID margin between RiskSlider (175.19) and CycleGAN
+(178.72, the closest competitor) is distinguishable from sampling noise at n=246.
+Computed KID (Binkowski et al. 2018 unbiased polynomial-kernel MMD^2 estimator, using
+the same Inception-v3 features already used for Table 1's FID) and bootstrap 95% CIs
+for both FID and KID. Full 2048-dim FID/KID sqrtm computation is too slow to
+bootstrap directly (thousands of 2048x2048 matrix-sqrt calls); CIs were computed on a
+150-dim PCA projection fit jointly per comparison (n=246 samples means the true
+covariance rank is <= 245 regardless of original dimensionality, so 150 components
+retains most of the real signal) -- point estimates reported alongside are the exact,
+full-dimensional values matching Table 1. Script:
+`claudecode/code/classifier_fix/fid_kid_bootstrap.py`. Data:
+`claudecode/result/classifier_fix/fid_kid_bootstrap.csv` (marginal CIs) and
+`fid_kid_paired_diff_bootstrap.csv` (paired RiskSlider-vs-baseline difference CIs, the
+more direct/higher-power test).
+
+**Caught and fixed a real bug before trusting these numbers**: the first version of
+the paired-difference bootstrap used two different, independently-fit PCA bases for
+the shared "real" reference features across the two comparisons being differenced,
+producing a mathematically inconsistent result (a CycleGAN comparison whose CI didn't
+even bracket the sign of the point-estimate difference). Fixed by fitting one PCA
+basis jointly across all three arrays (real, method A, method B) being compared in
+each paired test. The numbers below are from the corrected version.
+
+**Result: RiskSlider's FID/KID advantage over CycleGAN specifically is NOT
+statistically significant.** Paired-difference 95% CIs (FID_ours - FID_baseline):
+
+| Baseline | FID diff 95% CI | excludes 0? | KID diff 95% CI | excludes 0? |
+|---|---|---|---|---|
+| ControlNet | [-91.94, -64.17] | yes | [-0.899, -0.604] | yes |
+| Pix2Pix | [-30.90, -6.12] | yes | [-0.267, -0.034] | yes |
+| **CycleGAN** | **[-13.49, +12.88]** | **no** | **[-0.044, +0.141]** | **no** |
+| Palette | [-273.77, -233.99] | yes | [-4.284, -3.744] | yes |
+
+RiskSlider is significantly better than ControlNet, Pix2Pix, and Palette on both
+FID and KID (CIs entirely below zero). **But against CycleGAN, the CI straddles
+zero for both metrics** -- the 175.19 vs. 178.72 FID gap (and the corresponding KID
+gap) that Table 1 reports as a point estimate is not distinguishable from sampling
+noise at n=246. **Action for the paper**: do not claim RiskSlider "wins" on FID/KID
+against CycleGAN specifically; the honest claim is a tie on this metric, consistent
+with the already-established pattern that CycleGAN is RiskSlider's one genuine,
+metric-specific close competitor (also seen in the CLIP-I/DINO-I Wilcoxon results
+above). RiskSlider's advantage over CycleGAN is still real and decisive on
+LPIPS/SSIM/PSNR (Holm-corrected p<1e-40, r>0.99, see effect-size section above) and on
+population-level FID/KID against the other three baselines -- this is specifically an
+"our FID edge over CycleGAN in particular is not proven" finding, not a general
+weakening of Table 1's claims.

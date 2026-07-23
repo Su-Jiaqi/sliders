@@ -121,7 +121,57 @@ scene-level correlation at s=1 (already reported above: RiskSlider ρ=0.388 vs.
 naive+refiner ρ=0.272, both significant but RiskSlider's stronger) -- everywhere else
 in this table, s-conditioning is not distinguishable from naive interpolation.
 
-## Honest conclusion
+## 🔴 SUPERSEDING UPDATE (2026-07-24): clean rerun removes the VAE round-trip confound -- the s=1 advantage does NOT survive
+
+This directly answers the reviewer critique behind the paper's own
+"we did not have the opportunity to rerun before submission" sentence. The original
+naive-interpolation baseline (`naive_interp_baseline.py`) VAE-round-trips the images
+at *every* scale, including s=0 and s=1 -- where the interpolated latent equals
+z_pre or z_gen_post exactly, so decoding it just adds an unnecessary extra
+reconstruction pass on an image that already exists exactly (the real pre-disaster
+photo at s=0, RiskSlider's own unrefined generation at s=1). Reran cleanly
+(`naive_interp_baseline_v2_clean.py`): s=0 and s=1 now use the exact existing image
+directly, no VAE pass at all; only genuinely-intermediate scales (0.25-0.75) still
+require the (unavoidable) latent-interpolation + VAE-decode step. Refined through the
+identical, unmodified production refiner, then re-ran the same scene-level Spearman
+probe (`experiment_a_v2clean.csv`).
+
+**Result: the s=1 advantage previously reported for RiskSlider's actual pipeline
+disappears entirely once the confound is removed.**
+
+| | rho at s=1 | p |
+|---|---|---|
+| Naive interp + refiner, ORIGINAL (confounded, VAE round-tripped) | 0.272 | 0.0055 |
+| Naive interp + refiner, CLEAN (no round-trip at endpoints) | **0.388** | **5.12e-05** |
+| RiskSlider actual pipeline | 0.388 | 5.1e-05 |
+
+The clean naive-interpolation+refiner number (0.388, p=5.12e-05) matches RiskSlider's
+own actual-pipeline number (0.388, p=5.1e-05) to three decimal places. **These two
+pipelines are now statistically indistinguishable at s=1** -- the previously-reported
+"~43% relatively higher correlation" gap for RiskSlider was an artifact of the
+confound inflating the *naive* baseline's apparent weakness (the VAE round-trip was
+degrading the naive baseline's own s=1 anchor quality, making RiskSlider look
+comparatively better than it actually is). This is not a small effect or a
+close call -- it fully closes the gap.
+
+At intermediate scales, the clean rerun reproduces the original pattern almost
+exactly (rho non-significant at 0.25/0.3/0.5/0.7/0.75 for both variants, consistent
+with the already-documented intermediate-scale calibration weakness) -- only the s=1
+endpoint result changes.
+
+**Recommended framing for the paper, revised**: the "just interpolate between
+endpoints" critique is **not** rebutted by this experiment. Once the naive baseline
+is evaluated fairly (no gratuitous VAE round-trip at the endpoints), RiskSlider's
+s-conditioned generation shows **no measurable scene-level calibration advantage
+anywhere on the scale range tested**, including at the trained endpoint where the
+original (confounded) comparison suggested an advantage. The paper should not claim
+s-conditioning provides additional scene-specific severity information beyond what
+post-hoc endpoint generation + interpolation + refinement can recover -- the honest
+finding is that it does not, on this evidence. This replaces the "Recommended
+framing" and "Honest conclusion" text below, which is now superseded and kept only
+for the historical record of what changed and why.
+
+## Honest conclusion (SUPERSEDED -- see the section above for the corrected s=1 result)
 
 **The rebuttal is real but modest, not overwhelming.** At intermediate scales
 (0.5/0.7/0.75), refined naive interpolation and RiskSlider's actual pipeline are
@@ -134,7 +184,7 @@ stronger significance level (p=5.1e-5 vs. p=0.0055); concordance is 5.3 points h
 works and one doesn't" -- it is a case of "both carry some real signal at the trained
 endpoint, and RiskSlider's carries more."
 
-**Recommended framing for the paper**: do not claim s-conditioned generation
+~~**Recommended framing for the paper**: do not claim s-conditioned generation
 dramatically outperforms a naive interpolation baseline across the board -- it does
 not, especially at intermediate severities, and the population-level CAS metric is
 not sensitive enough to show any difference at all. Instead, claim precisely what the
@@ -142,11 +192,8 @@ data supports: conditioning the generator on s provides additional scene-specifi
 severity information beyond what post-hoc endpoint interpolation and refinement can
 recover, measurably so at the trained endpoint (Appendix Table [N]), while
 acknowledging this advantage does not yet extend with statistical significance to
-intermediate severities -- consistent with, and reinforcing, the paper's own
-observation elsewhere that intermediate-scale calibration remains an open challenge
-rather than a solved problem. This is a more defensible, reviewer-resistant claim
-than an unqualified "s-conditioning is clearly necessary," and it directly
-preempts the "just interpolate" critique with data rather than assertion.
+intermediate severities.~~ **No longer supported -- see the superseding section
+above. Do not use this framing.**
 
 ## Caveats
 - Single test category (SoCal wildfire, the primary benchmark). Not verified on
