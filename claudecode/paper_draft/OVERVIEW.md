@@ -724,3 +724,13 @@ model samples. Recommend a one-line caveat on this specific metric/boundary rath
 than rewriting the continuity claim. `cuda:7` used; `cuda:0` untouched. Uses the
 same best-available LoRA checkpoint substitution already caveated in the
 headline-vs-seed-stability finding (original path missing from disk).
+
+## FID/CLIP-I/DINO-I supplement for s=0 fix tables — DONE, 2026-07-25
+
+**Data**: `outputs/eval/scale0fix_remaining_fullmetrics/{train_refined,train_direct,test_direct,test_no_scale}/`.
+
+Backfilled CLIP-I/DINO-I (missing from the first pass of the train-split and
+w/o-Refinement/w/o-Scale-aware-Refiner reruns) for all 4 remaining combinations.
+FID only computed for `train_refined` (production pipeline, train split) before
+being dropped from the other 3 runs to cut wall-clock time; can be backfilled for
+the other 3 on request. Numbers reported to user directly.
