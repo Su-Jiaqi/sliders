@@ -734,3 +734,17 @@ w/o-Refinement/w/o-Scale-aware-Refiner reruns) for all 4 remaining combinations.
 FID only computed for `train_refined` (production pipeline, train split) before
 being dropped from the other 3 runs to cut wall-clock time; can be backfilled for
 the other 3 on request. Numbers reported to user directly.
+
+## s=0 fix: single test-split FID + psi soft probability recheck — DONE, 2026-07-25
+
+**File**: `claudecode/paper_draft/s0_fix_fid_and_psi_20260725.md`.
+
+Two quick follow-ups closed: (1) confirmed and exploited that FID(s=0) is identical
+across every test-split variant (same 246 real x_pre images each time) — computed
+once (220.856) instead of 3x, saving time. (2) User caught that `tab:app_psi_prob`'s
+s=0 cell (0.430) reflects ψ's response to the *old* model-generated s=0, not the new
+x_pre passthrough. Confirmed ψ = `socalfire_cls_real_fresh` (the actual Eq. 6
+semantic teacher, distinct from the CAS/PCR classifier), reproduced the old value
+exactly (0.4299≈0.430), and computed the new one: **0.0173** — a ~25x drop, expected
+since a real undamaged photo should read as confidently non-post-disaster. This
+table cell needs updating alongside the rest of the s=0 fix.
