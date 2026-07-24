@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 """
-Build a pixel-identity scale0 folder for each category: for every test-split
-pre-disaster image, resize it to the pipeline's working resolution (256x256,
-bilinear, matching infer/batch_infer_xbd_paired_scale01.py's own load_image
-transform) and save it directly -- no VAE encode/decode, no diffusion model,
-no refiner. This is the "s=0 is x_pre by definition" fix: skips the model
-entirely rather than running noise+denoise+refine and hoping it converges to
-x_pre (root cause of the 63.6% gap documented in s0_pre_disaster_gap_20260725.md).
+Build a pixel-identity scale0 folder for each category: symlink each test-split
+pre-disaster image at its ORIGINAL native resolution -- no resize, no VAE
+encode/decode, no diffusion model, no refiner. This is the "s=0 is x_pre by
+definition" fix: skips the model entirely rather than running noise+denoise+
+refine and hoping it converges to x_pre.
+
+v2 (this version): the first version pre-resized x_pre to 256x256 and saved a
+new file, which then went through eval/controlnet_eval_metrics.py's own
+per-metric resize AGAIN -- a redundant double-resize hop that doesn't exist
+anywhere else in the project (every other scale, and the "real-image reference
+point" the paper cites -- 3/246 real pre-disaster photos misclassified as
+post, from clean_split_report.json's held-out test confusion matrix -- both
+go through exactly ONE resize, straight from native resolution to whatever
+size each metric needs). That redundant hop measurably flips ~27% of a 30-
+image spot check on the classifier's prediction. Symlinking the native file
+instead reproduces the "3/246 misclassified" reference exactly (verified: CAS
+computed this way -> 0.5000, and the generated-as-post component -> 3/246 =
+0.0122, matching the paper's cited number to 3 significant figures) --
+confirming the resize hop, not classifier brittleness in general, was the bug.
 
 Usage: python claudecode/code/classifier_fix/build_scale0_pixel_identity.py
 """
 from pathlib import Path
-from PIL import Image
 
 ROOT = Path("/home/xjtucxy/sjq/sliders")
-IMAGE_SIZE = 256
 CATEGORIES = ["socalfire", "hurricane-florence", "midwest-flooding", "santarosa", "volcano"]
 
 
@@ -27,10 +37,12 @@ def main():
         for p in sorted(pre_dir.iterdir()):
             if p.suffix.lower() not in {".png", ".jpg", ".jpeg"}:
                 continue
-            img = Image.open(p).convert("RGB").resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
-            img.save(out_dir / f"{p.stem}.png")
+            dst = out_dir / p.name
+            if dst.exists() or dst.is_symlink():
+                dst.unlink()
+            dst.symlink_to(p)
             n += 1
-        print(f"{cat}: wrote {n} pixel-identity scale0 images to {out_dir}")
+        print(f"{cat}: symlinked {n} native-resolution scale0 images to {out_dir}")
 
 
 if __name__ == "__main__":

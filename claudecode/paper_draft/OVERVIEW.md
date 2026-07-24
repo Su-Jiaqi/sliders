@@ -673,3 +673,24 @@ pixel-identity s=0 fix. Full new 7-scale CAS/LPIPS numbers in the file. Flagged 
 thing worth a second look: "w/o Pseudo Supervision" is now flat at CAS=0.9898 from
 s=0.25 all the way to s=1 — a different shape than the original figure, worth
 checking against what this ablation panel is meant to argue before using it as-is.
+
+## s=0 fix v2 — traced "1.2%" to its source, found and fixed a bug in v1 — DONE, 2026-07-25
+
+**File**: `claudecode/paper_draft/s0_fix_v2_correction_20260725.md`.
+
+Answered the key open question: the paper's "1.2%" traces exactly to
+`output-models/classifier/socalfire_cls_clean_split/clean_split_report.json`'s
+held-out test confusion matrix (3/246 real pre-disaster photos misclassified as
+post — a real, correctly-sourced number, not something to doubt). The 62.6% vs 1.2%
+mismatch turned out to be **a bug in this session's own v1 s=0 fix**: pre-resizing
+x_pre to 256px and saving a new file caused a redundant double-resize hop (nothing
+else in the project has this — every other scale, and the "1.2%" baseline itself,
+only ever resizes once, straight from native resolution). Fixed by symlinking the
+native-resolution x_pre file directly instead. **Result: CAS(s=0) is now exactly
+0.5000 for all 5 categories** (the theoretically correct value), and the
+generated-as-post component reproduces the paper's "1.2%" number to 3 significant
+figures. **Confirmed this does not generalize** — Table 2/cross-category/seed-
+stability all score natively-generated, single-resize images and were never exposed
+to this bug. SSIM/PSNR at s=0 shifted slightly from the v1 numbers (LANCZOS resize
+behaves differently on native vs. pre-downsampled input) — v2 numbers supersede v1.
+CAS-labeled figure regenerated again with the fix.
