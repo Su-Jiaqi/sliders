@@ -707,3 +707,20 @@ variants ("w/o Refinement", "w/o Scale-aware Refiner") are now fixed alongside
 complete 4-row ablation table are in the file. `cuda:4` used; `cuda:0` untouched.
 Only remaining open item across this whole s=0/PCR thread: the 2026-07-17
 cross-category CSV reproducibility question, still not acted on per instruction.
+
+## s=0 -> s=0.01 boundary continuity check — DONE, 2026-07-25 (real, modest issue found in SSIM only)
+
+**File**: `claudecode/paper_draft/s0_continuity_check_20260725.md`.
+
+Reviewer-flagged risk, checked directly: generated a genuine s=0.01 sample through
+the actual model (not shortcut), compared its jump from the new pixel-identity s=0
+against every other adjacent-scale jump in the trajectory. **LPIPS/PSNR/CAS: the
+new 0->0.01 jump is unremarkable, within the range of jumps already present
+elsewhere in the curve.** **SSIM: the new jump (Δ=0.0398) is now the single largest
+boundary jump in the whole trajectory** (previous largest was 0.0285) — a real,
+modest (not dramatic) new discontinuity, mechanistically explained by a real-photo-
+vs-model-sample domain gap that didn't exist when both sides of the boundary were
+model samples. Recommend a one-line caveat on this specific metric/boundary rather
+than rewriting the continuity claim. `cuda:7` used; `cuda:0` untouched. Uses the
+same best-available LoRA checkpoint substitution already caveated in the
+headline-vs-seed-stability finding (original path missing from disk).
