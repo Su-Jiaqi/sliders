@@ -45,6 +45,7 @@ METHODS = {
     "Palette": (ROOT / "outputs/baselines/palette/test_socalfire_epoch40_merged_246/test/0", "Out_"),
     "SDEdit": ROOT / "outputs/baselines/sdedit/socalfire/test",
     "RiskSlider (Ours)": ROOT / "outputs/refine-2/socalfire/test/scale1",
+    "No-progression control": ROOT / "outputs/ablation-noprogression-refined/socalfire/test/scale1",
 }
 
 

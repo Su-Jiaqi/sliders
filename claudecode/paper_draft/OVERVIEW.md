@@ -48,6 +48,11 @@ submission" or a "new finding to write up honestly", and which file/data backs i
   swapping in `output-models/refine/socalfire/socalfire_scale1_refiner_clean_psi_20260717/best.pt`
   as the production f1 checkpoint, and the four new per-category clean classifiers
   wherever Table 10/11's numbers are reported.
+- **🔴 NEW, 2026-07-24, Table 2 / `tab:app_ablation_multiscale` also NOT applied to
+  the PDF** — see `table2_ablation_classifier_mismatch_20260724.md`. Same
+  `_shared_real_classifier` third-checkpoint problem as Table 1, independently
+  contaminating the whole ablation table (all 4 variants, largest effect on
+  "w/o Refinement": 0.7093→0.6850 at s=1). Same fix: replace with `table14_clean`.
 
 ---
 
@@ -383,6 +388,94 @@ each other): 0.25→0.7378, 0.5→0.9085, 0.75→0.9837, 1→0.9878. Same fix pa
 Table 1 CAS finding — standardize on the current, reproducible pipeline + the
 confirmed leak-free classifier, everywhere "Ours"/RiskSlider CAS is cited.
 
+## Table 2 / appendix ablation CAS mismatch, 2026-07-24 (new, root-caused)
+
+**File**: `claudecode/paper_draft/table2_ablation_classifier_mismatch_20260724.md`.
+
+User found `tab:app_continuous_generation_scale` (CAS=0.6850, unrefined generator,
+s=1) disagrees with Table 2 / `tab:app_ablation_multiscale`'s "w/o Refinement" row
+(CAS=0.7093) even though both describe the identical images and every other metric
+(LPIPS/SSIM/PSNR/FID/CLIP-I/DINO-I) matches exactly. Root cause: **the same third
+classifier checkpoint already flagged in the Table 1 CAS finding**
+(`_shared_real_classifier`, from the unrelated `cas_cross_domain` experiment) also
+scored the entire Table 2 / `tab:app_ablation_multiscale` table
+(`outputs/eval/ablation/ablation-compare/`, dated 2026-05-03), not just Table 1's
+RiskSlider row. All four ablation variants are affected to varying degrees (largest
+on "w/o Refinement", -0.0244 at s=1). **Fix: replace Table 2's and
+`tab:app_ablation_multiscale`'s CAS columns with `table14_clean`'s numbers** — no
+new compute needed, same fix pattern as the Table 1 CAS finding and the
+`appendix_table_consistency_20260724.md` finding. One open item: a full sweep for
+any other table still citing `_shared_real_classifier`-scored CAS has not been done.
+
+## Cross-category appendix tables CAS mismatch, 2026-07-24 (new, root-caused — third instance of the same bug family)
+
+**File**: `claudecode/paper_draft/appendix_cross_category_tables_20260724.md`.
+
+User read the full `appendices/03_experimental_results.tex` for the first time this
+pass and found a third instance: `tab:app_cross_category_s1` and
+`tab:app_cross_category_cas`'s "Wildfire (primary)" rows are both wrong, and wrong
+for two *different* reasons layered together.
+`tab:app_cross_category_s1`'s Wildfire CAS (0.9939) is the same
+`_shared_real_classifier` bug as Table 1/2 — trivial fix, swap to 0.9878, no new
+compute. `tab:app_cross_category_cas`'s whole Wildfire row (0.618/0.720/0.880/0.976/0.994)
+is worse: it traces to the *old, pre-`refine-2` generation run* (already flagged in
+`appendix_table_consistency_20260724.md`) scored by the *original* leaked classifier
+(`socalfire_cls_20260421_201243`, the one used for Table 1's baselines) — the only
+classifier that existed on this machine on 2026-04-22 when that eval ran. Checked the
+other four rows (Hurricane/Flooding/Santa Rosa/Volcano, supplied by the user from the
+actual tex text) against the two existing Table 10/11 recomputes: they match the
+per-category **leaked** classifier numbers (`table10_11_percategory_LEAKED_verify.csv`)
+almost exactly (Flooding/Volcano exact, Hurricane/Santa Rosa off only at s=0.75 by the
+same already-documented seed-variance amount) — confirming those four rows are
+genuinely current-pipeline Table 10/11 data, and structurally *cannot* share a run
+with the Wildfire row (the other four categories' `refine-2` pipelines didn't exist
+yet in April when Wildfire's row was computed). **Fix: replace the entire
+`tab:app_cross_category_cas` table with `table10_11_percategory_CLEAN.csv`** (already
+computed, no new compute needed) and swap `tab:app_cross_category_s1`'s CAS column
+the same way. Side finding: corrected an inaccurate claim in
+`appendix_table_consistency_20260724.md` that the old run's images were unrecoverable
+— they survive, renamed to `outputs/refine-1/socalfire`, verified bit-for-bit via a
+fresh LPIPS/SSIM/PSNR rerun (used `cuda:1` to avoid the training job running on
+`cuda:0` at the time).
+
+**Follow-up, same day**: user cross-checked the recommended fix values against
+`tab:app_cross_category_s1` (the endpoint table) and found its own
+Hurricane/Flooding/Santa Rosa/Volcano CAS values don't match the clean numbers either
+(Volcano especially: 1.0 vs 0.5, a direction-flipping gap) — asked whether this was a
+third, uninvestigated source before touching either table. Checked: it isn't — those
+four endpoint-table values trace exactly to the same per-category leaked
+`table10_11_percategory_LEAKED_verify.csv` already identified as the trend table's
+source (re-confirmed against the underlying `eval-full`/`eval-full-rerun` csvs for
+Hurricane and Santa Rosa). It's the same leaked-vs-clean gap being fixed everywhere
+else, not a new inconsistency — both tables fix cleanly from the single
+`table10_11_percategory_CLEAN.csv` source with nothing left over.
+
+## Seed-stability table CAS mismatch, 2026-07-24 (new, root-caused — 4th instance, a genuinely new checkpoint)
+
+**File**: `claudecode/paper_draft/appendix_seed_stability_20260724.md`.
+
+User spotted `tab:app_seed_stability` (3 seeds, full pipeline, s=1): CAS consistently
+~0.008-0.010 *above* the cross-referenced clean baseline (0.9878) while
+LPIPS/SSIM/PSNR sit consistently *below* it — the signature of a different classifier
+scoring the same images, not seed noise, but wanted it confirmed before touching the
+table since the evidence was less direct than the first three instances. Confirmed:
+re-scored the still-on-disk seed images (`outputs/stability/socalfire_seed{42,43,44}/refined/test/scale1`)
+against four candidate checkpoints on `cuda:1` and got exact digit-for-digit matches
+to the published numbers with `output-models/classifier/socalfire_cls_real_fresh/best.pt`
+— a **4th distinct leaked checkpoint**, different from all three already found
+(`socalfire_cls_20260421_201243`, `_shared_real_classifier`,
+`socalfire_cls_clean_split`). Confirmed leaked via the repo's own
+`train_classifier_clean_split.py` docstring and `recompute_table1_cas.py`'s explicit
+`"leaked (original, test_acc-selected)"` label — this checkpoint is also, separately,
+the semantic teacher ψ used to train the production refiner (already a known,
+lower-urgency open item). Also ruled out the Cross-Category-style compounding bug
+(stale generation run): direct LPIPS check confirms the seed images are
+pipeline-consistent with current production `refine-2` (mean LPIPS 0.0100 vs. 0.0459
+against the old, superseded `refine-1` pipeline) — this table's LPIPS/SSIM/PSNR need
+no change. **Fix: replace only the CAS column** — clean-classifier rescore already
+done, no new generation needed: 0.9878 / 0.9858 / 0.9878 (mean 0.9871±0.0012), saved
+to `claudecode/result/classifier_fix/seed_stability_clean/seed_stability_clean_cas.csv`.
+
 ## Second batch of reviewer-checklist items, 2026-07-24
 
 Five items requested; three done (pure eval / cheap generation), two remain (need
@@ -444,9 +537,31 @@ new segmentation model / new training, see next section).
   you don't need to fine-tune at all" -- on this evidence, fine-tuning does real,
   necessary work.
 
-## Not yet done (needs new training)
+## Same-backbone-no-progression-conditioning control — DONE, 2026-07-24 (honest negative result)
 
-- **Same-backbone-no-progression-conditioning control**: the one remaining item
-  from the reviewer checklist requiring a full new LoRA training run (same SD v1.4
-  backbone/rank/alpha/steps, but endpoint-only, no severity conditioning) -- not
-  started, open resource-budget question.
+**File**: `claudecode/paper_draft/same_backbone_control_20260724.md`.
+
+Trained a new LoRA from scratch, identical to the production socalfire recipe in
+every hyperparameter (backbone, rank=16, alpha=16.0, 15,000 steps, lr, loss weights),
+except forcing the scale-sampling to draw only `s in {0,1}` for the entire run
+(confirmed in the training log -- never an intermediate value) -- i.e. the same
+backbone, fine-tuned with the same recipe, but never given a progression/severity
+training signal. Generated the test-set endpoint, refined through the unchanged
+production refiner, evaluated with the same Table 1 metrics.
+
+**Result: no measurable difference from RiskSlider's actual endpoint performance on
+any metric** (LPIPS/SSIM/PSNR/FID/CLIP-I/DINO-I/structural-IoU all within noise; CAS
+is marginally *higher* for the control, 0.9898 vs. 0.9878). **Progression-conditioned
+training provides no measurable endpoint-quality advantage over a much simpler
+endpoint-only fine-tune of the same backbone** -- Table 1's endpoint numbers reflect
+that fine-tuning happened at all, not the specific progression-conditioning
+methodology. Consistent with, and reinforcing, the clean naive-interpolation
+reversal finding above. **Important scope limit**: this control was never trained on
+intermediate severities and cannot produce a meaningful continuous slider -- this
+result is about endpoint quality only, and says nothing about whether
+progression-conditioning is needed for the continuous-control capability itself
+(a separate claim, argued elsewhere via scene-level calibration / monotonicity
+results, not undermined by this experiment). **Recommended framing**: don't credit
+progression-conditioning for endpoint image quality; that credit belongs to
+backbone fine-tuning in general (also consistent with the SDEdit finding that some
+form of fine-tuning is clearly necessary, just not specifically this form).

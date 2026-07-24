@@ -48,12 +48,19 @@ number at s=1 (both refiners are strongly endpoint-supervised, so the trained
 endpoint is where they agree most), but diverge substantially at intermediate scales,
 where the two different refiner training runs behave differently.
 
-**This old run's images no longer exist on this machine** -- `outputs/refine/socalfire`
-does not exist on disk (only the summary CSV/JSON survive). This cannot be
-regenerated or independently re-verified beyond what the surviving CSV already shows;
-the only way forward is to standardize both tables on the current, reproducible
-production pipeline (`refine-2`), not to try to reconcile or choose between the two
-old numbers.
+**Correction (2026-07-24, later same day)**: this section originally claimed the old
+run's images "no longer exist on this machine" (`outputs/refine/socalfire` was
+checked and found missing). That was wrong — the images survive under a renamed path,
+`outputs/refine-1/socalfire/test/scale*` (all 7 scales, n=246). Verified by re-running
+LPIPS/SSIM/PSNR on that directory: bit-for-bit identical to
+`socalfire-refined_metrics.csv`'s test row at every scale. See
+`appendix_cross_category_tables_20260724.md` for the eval that surfaced this (found
+while root-causing a third, related instance of this bug in the cross-category
+appendix table). This doesn't change the recommendation below — still standardize on
+the current, reproducible `refine-2` pipeline, not the superseded `refine-1` one —
+but the "unrecoverable" framing was inaccurate and worth flagging in case a future
+pass wants to double-check the old run directly instead of trusting only the
+surviving CSV.
 
 ## Recommended fix
 
