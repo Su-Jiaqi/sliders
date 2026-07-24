@@ -565,3 +565,72 @@ results, not undermined by this experiment). **Recommended framing**: don't cred
 progression-conditioning for endpoint image quality; that credit belongs to
 backbone fine-tuning in general (also consistent with the SDEdit finding that some
 form of fine-tuning is clearly necessary, just not specifically this form).
+
+## Negative-controls quantitative table (mean diff/CI/p/effect size) — DONE, 2026-07-25
+
+**File**: `claudecode/paper_draft/negative_controls_quantitative_table_20260725.md`.
+Data: `claudecode/result/classifier_fix/negative_controls_effect_sizes.csv`.
+
+Reviewer wanted a quantitative table (mean diff, CI, p/effect size) for the two
+negative controls, appendix-only per the page-budget decision. Built it by adapting
+`table1_effect_sizes.py`'s paired-Wilcoxon + rank-biserial-r + Holm-correction
+methodology, plus a new paired bootstrap 95% CI, re-scoring images that already
+existed on disk (no new generation). **Caught one subtlety before running it**:
+naive-interpolation's own v2clean design makes s=1 definitionally identical to
+RiskSlider's actual pipeline (confirmed empirically: diff=0.00000, p=1.0 there) — used
+the three intermediate scales (0.25/0.5/0.75) instead for that comparison, and s=1
+(its only trained point) for the no-progression control. **Result for both**: several
+differences reach statistical significance at n=246 (large-n effect), but all effect
+sizes are small (rank-biserial r ≤ 0.61) and absolute magnitudes are 2-4 orders of
+magnitude smaller than any Table 1 baseline gap — quantitatively confirms both
+documents' existing qualitative "indistinguishable at the population level" claims.
+
+## appendices/04 CAS-labeled figure (`cas_lpips_vs_scale_test.png`) source — DONE, 2026-07-25
+
+**File**: `claudecode/paper_draft/cas_figure_appendix04_source_20260725.md`.
+
+Both blockers reported (no plotting script, no mid-scale "w/o Pseudo Supervision"
+data) turned out to be resolved already: script is `eval/cas-lpips-scale.py`, default
+data path `outputs/eval/ablation/socalfire_unified_no_pseudo_20260422_103055/socalfire-infered_metrics.json`
+has full 7-scale rows. CAS→rename is a one-line label edit + rerun, no new compute.
+**New caveat found along the way**: the script's default "Ours" curve is the old
+refine-1 pipeline (not current refine-2), and both curves almost certainly rest on
+the original leaked-selection classifier (`socalfire_cls_20260421_201243` — the only
+classifier that existed as of the figure's April 2026 generation dates) — same bug
+class as Table 2/cross-category, flagged but not fixed (separate decision from the
+rename, would change the curve shape not just the label).
+
+## s=0 vs. x_pre gap — root cause found, code-only fix available, NOT applied — 2026-07-25
+
+**File**: `claudecode/paper_draft/s0_pre_disaster_gap_20260725.md`.
+
+`infer/batch_infer_xbd_paired_scale01.py:299-323` runs s=0 through a full
+noise-then-denoise diffusion pass instead of special-casing it as an identity
+passthrough of x_pre — even though the paper's own severity definition makes s=0's
+ground truth trivially known. A code-only special case (skip the model entirely for
+s=0, save x_pre directly) is feasible without any retraining and without touching
+`cuda:0`. **Not implemented** — regenerating scale0 would ripple into every table
+citing s=0 metrics, and the exact intended behavior (pixel-identical copy vs. one VAE
+round-trip, and what the paper's cited "1.2%" floor actually measures) needs
+confirmation first.
+
+## Headline LPIPS (Table 1) vs. seed-stability mean — real gap, root cause found, NOT reconciled — 2026-07-25
+
+**File**: `claudecode/paper_draft/headline_vs_seed_stability_gap_20260725.md`.
+
+Different bug class from every classifier-leak finding above — this one is a
+base-generation-stage environment/checkpoint provenance issue, not a classifier
+mix-up. Headline 0.2166 traces to `outputs/refine-2/socalfire/test/scale1`
+(genuine production output, base images generated 2026-04-21). The seed-stability
+sweep's base images were freshly regenerated 2026-05-04, in an environment where
+xFormers' compiled CUDA extensions had broken (confirmed: log warns of a
+PyTorch/CUDA version mismatch; current environment shows the identical warning
+today) — direct LPIPS distance between the two nominally-"seed=42" base-image sets
+is 0.0771, far too large for a true identical-seed rerun. Separately, the exact LoRA
+checkpoint file the headline script references no longer exists on disk (likely
+renamed in a later reorg, unconfirmed byte-for-byte). **No clean substitute data
+exists to swap in** (unlike the CAS-leak fixes) — reconciling this for real requires
+regenerating one of the two runs in a shared environment, which is a visible change
+to load-bearing numbers and needs sign-off before I touch anything. Recommended
+minimum fix: disclose the environment-drift caveat in the seed-stability section.
+All checking done on `cuda:5`; `cuda:0` untouched.
