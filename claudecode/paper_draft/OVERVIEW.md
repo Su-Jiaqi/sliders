@@ -694,3 +694,16 @@ stability all score natively-generated, single-resize images and were never expo
 to this bug. SSIM/PSNR at s=0 shifted slightly from the v1 numbers (LANCZOS resize
 behaves differently on native vs. pre-downsampled input) — v2 numbers supersede v1.
 CAS-labeled figure regenerated again with the fix.
+
+## s=0 fix — remaining scope closed (train split + w/o Refinement + w/o Scale-aware Refiner) — DONE, 2026-07-25
+
+**File**: `claudecode/paper_draft/s0_fix_remaining_scope_20260725.md`.
+
+Closed both previously-flagged gaps: train split (n=769, wildfire) now has the
+same native-symlink s=0 fix, and the two remaining `tab:app_ablation_multiscale`
+variants ("w/o Refinement", "w/o Scale-aware Refiner") are now fixed alongside
+"Ours"/"w/o Pseudo Supervision" — all 4 rows of that table are consistent again
+(all CAS(s=0)=0.5000). Full new numbers for both train-split tables and the
+complete 4-row ablation table are in the file. `cuda:4` used; `cuda:0` untouched.
+Only remaining open item across this whole s=0/PCR thread: the 2026-07-17
+cross-category CSV reproducibility question, still not acted on per instruction.
