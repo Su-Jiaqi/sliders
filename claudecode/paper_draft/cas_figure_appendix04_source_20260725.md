@@ -53,3 +53,31 @@ Two separable decisions:
    `outputs/refine-2/socalfire/test/scale*`, so also just re-scoring, no new
    generation). Flagging this rather than doing it unprompted, since it changes the
    figure's actual curve shape, not just its label.
+
+## Update, same day: figure regenerated with clean classifier + refine-2 + s=0 fix
+
+Regenerated `outputs/eval/cas_figure_clean/cas_lpips_vs_scale_test_CLEAN.{png,pdf}`
+using `eval/cas-lpips-scale.py` with both curves now on current production
+(`outputs/refine-2/socalfire`) + `outputs/ablation-2/socalfire/no_pseudo_finalbest`
++ clean classifier (`socalfire_cls_clean_split`) + the s=0 pixel-identity fix
+(`s0_pixel_identity_fix_results_20260725.md`) applied to both curves' s=0 point.
+
+New 7-scale values:
+
+| scale | Ours CAS | Ours LPIPS | w/o Pseudo CAS | w/o Pseudo LPIPS |
+|---|---|---|---|---|
+| 0 | 0.6260 | 0.3075 | 0.6260 | 0.3075 |
+| 0.25 | 0.7378 | 0.2813 | 0.9898 | 0.2122 |
+| 0.3 | 0.7561 | 0.2761 | 0.9898 | 0.2121 |
+| 0.5 | 0.9085 | 0.2539 | 0.9898 | 0.2119 |
+| 0.7 | 0.9797 | 0.2338 | 0.9898 | 0.2120 |
+| 0.75 | 0.9837 | 0.2296 | 0.9898 | 0.2120 |
+| 1.0 | 0.9878 | 0.2166 | 0.9898 | 0.2123 |
+
+Note both curves share the identical s=0 point by construction (same pixel-identity
+fix applied to both) — same CAS-resize-sensitivity caveat documented in
+`s0_pixel_identity_fix_results_20260725.md` applies to this point specifically. The
+"w/o Pseudo Supervision" curve's CAS is flat at 0.9898 from s=0.25 onward — worth
+double-checking against the paper's own framing of what this ablation is supposed to
+show, since a flat line from the very first non-zero scale is a different shape than
+the original (stale-pipeline, leaked-classifier) figure showed.

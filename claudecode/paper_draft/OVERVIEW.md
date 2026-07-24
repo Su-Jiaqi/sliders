@@ -634,3 +634,42 @@ regenerating one of the two runs in a shared environment, which is a visible cha
 to load-bearing numbers and needs sign-off before I touch anything. Recommended
 minimum fix: disclose the environment-drift caveat in the seed-stability section.
 All checking done on `cuda:5`; `cuda:0` untouched.
+
+## s=0 pixel-identity fix — EXECUTED, 2026-07-25 (results + two new caveats)
+
+**File**: `claudecode/paper_draft/s0_pixel_identity_fix_results_20260725.md`.
+Script: `claudecode/code/classifier_fix/build_scale0_pixel_identity.py`. Data:
+`outputs/eval/scale0fix/<category>/socalfire-infered_metrics.csv` (all 5 categories).
+
+Executed the previously-proposed fix: s=0 now returns real x_pre directly (resized
+once to 256px, no model/VAE), for all 5 categories, re-evaluated with the clean
+classifier on `cuda:5`/`cuda:7` (`cuda:0` untouched). **LPIPS/SSIM/PSNR barely move**
+(3rd-4th decimal) and the 0→0.25 trajectory jump is essentially unchanged — the
+paper's disclosed gap is *not* a pixel-similarity gap. **Socalfire's old CAS(s=0) =
+0.6362 is almost certainly the paper's "63.6%" number** (exact match) — but the fix
+does **not** bring it near "1.2%" (new value: 0.6260, barely changed). Investigated
+why: found the classifier flips prediction on 27% of a 30-image spot check purely
+from an extra 256px intermediate resize step (present in every scale folder in this
+project, not unique to this fix) — **CAS at s=0 is dominated by classifier
+resize-sensitivity, not semantic content, and isn't a trustworthy signal regardless
+of which fix is used.** Recommend dropping CAS from the s=0 honest-disclosure claim.
+**Also surfaced a new, broader caveat**: re-running the earlier Cross-Category fix's
+source file (`table10_11_percategory_CLEAN.csv`, generated 2026-07-17) does not
+reproduce today under identical checkpoint+images+code (Hurricane s=0.25: stored
+0.5206 vs. fresh 0.5928, confirmed deterministic within-session) — same environment-
+drift phenomenon as `headline_vs_seed_stability_gap_20260725.md`, now shown to
+affect classifier inference too, not just diffusion generation. The Cross-Category
+fix's qualitative conclusion still holds but its specific replacement numbers may
+need a fresh recompute before final use. Still don't know what the paper's "1.2%"
+number actually measures — flagged, needs the exact source sentence to resolve.
+
+## CAS-labeled figure — regenerated with clean classifier + refine-2 + s=0 fix — DONE, 2026-07-25
+
+**Update to**: `claudecode/paper_draft/cas_figure_appendix04_source_20260725.md`.
+New figure: `outputs/eval/cas_figure_clean/cas_lpips_vs_scale_test_CLEAN.{png,pdf}`.
+
+Both curves regenerated on current production pipeline + clean classifier + the
+pixel-identity s=0 fix. Full new 7-scale CAS/LPIPS numbers in the file. Flagged one
+thing worth a second look: "w/o Pseudo Supervision" is now flat at CAS=0.9898 from
+s=0.25 all the way to s=1 — a different shape than the original figure, worth
+checking against what this ablation panel is meant to argue before using it as-is.
