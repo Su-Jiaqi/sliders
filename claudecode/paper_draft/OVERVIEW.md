@@ -748,3 +748,26 @@ semantic teacher, distinct from the CAS/PCR classifier), reproduced the old valu
 exactly (0.4299≈0.430), and computed the new one: **0.0173** — a ~25x drop, expected
 since a real undamaged photo should read as confidently non-post-disaster. This
 table cell needs updating alongside the rest of the s=0 fix.
+
+## Review-response 3-day plan, round 2 — alpha-blend control + P0 s=1 regeneration — DONE, 2026-07-25
+
+**Files**: `alpha_blend_trivial_control_20260725.md`, `p0_s1_regeneration_result_20260725.md`.
+
+- **Alpha-blending trivial control**: pixel-space linear blend of real pre/post,
+  no model at all, evaluated with the identical pipeline. **PCR trajectory is
+  nearly indistinguishable from RiskSlider's own** (identical to 4 decimals at
+  s=0.7/0.75) — directly confirms the reviewer's core critique that PCR cannot
+  separate learned continuous control from trivial pixel mixing. LPIPS tells the
+  opposite story but for a structural reason (blending has direct access to the
+  real target pixels it's scored against, unlike real generation) — flagged as not
+  a fair comparator, which is exactly why the PCR result is the one that matters.
+- **P0 (s=1 full-pipeline regeneration, current environment)**: reproduces the
+  headline Table 1 numbers to 4-5 decimal places (LPIPS/SSIM/PSNR/FID/CLIP-I/
+  DINO-I), PCR within 0.002 (noise floor). This directly answers the reviewer's
+  "rerun Table 1 in the fixed environment" instruction — done, and it holds. Also
+  clarifies the seed-stability table's ~9σ gap is NOT general environment-driven
+  non-reproducibility (this full regen, in the same broken-xFormers environment,
+  reproduced cleanly) — more likely genuine seed-to-seed variation specific to that
+  sweep's different script/seed set.
+
+P1 (5 intermediate-scale regeneration) still running in background, cuda:7.
