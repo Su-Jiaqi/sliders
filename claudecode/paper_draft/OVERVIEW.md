@@ -771,3 +771,21 @@ table cell needs updating alongside the rest of the s=0 fix.
   sweep's different script/seed set.
 
 P1 (5 intermediate-scale regeneration) still running in background, cuda:7.
+
+## Review-response 3-day plan, round 3 — Holm/stats audit resolved, narrative reframe drafted — 2026-07-25
+
+**File**: `zero_cost_controllability_reframe_20260725.md`.
+
+- **Holm-correction dependency check**: confirmed the probe scripts
+  (`claudecode/code/experiment_a/multiscale_correlation.py`) only ever cache
+  aggregate stats (rho/p/CI/mean_Shat) per variant-scale row, never per-scene
+  predictions — but Holm-Bonferroni only needs the p-value list, which IS already
+  in these CSVs (`scipy.stats.spearmanr`'s standard p). **This is a local pandas
+  job, not a server job** — no feature re-extraction needed, contrary to the
+  original assumption.
+- **"Zero marginal cost controllability" reframe**: drafted paragraph (for
+  wherever Table 22/23 land in the main text) that proactively owns the negative
+  controls' finding rather than letting it read as caught-by-reviewer, calibrated
+  to NOT oversell (explicitly notes this doesn't address the reviewer's top-
+  priority items). Also specifies the mechanical moves: Table 22/23 + the new
+  alpha-blend control into main text, Volcano (N=4) dropped from every table.
