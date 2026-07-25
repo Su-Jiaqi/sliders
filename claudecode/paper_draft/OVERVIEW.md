@@ -789,3 +789,12 @@ P1 (5 intermediate-scale regeneration) still running in background, cuda:7.
   to NOT oversell (explicitly notes this doesn't address the reviewer's top-
   priority items). Also specifies the mechanical moves: Table 22/23 + the new
   alpha-blend control into main text, Volcano (N=4) dropped from every table.
+
+## P1: full 7-scale regeneration complete — trajectory reproduces cleanly — 2026-07-25
+
+**File**: `p1_full_regen_result_20260725.md`. All 6 review-response 3-day-plan
+items are now done (P0+P1 together give a complete, current-environment-
+consistent 7-scale table). Every intermediate scale's regenerated numbers land
+within 2-3 decimal places of the existing ones (same order as the documented
+seed-noise floor); FID freshly computed at all 7 scales for the first time.
+Confirms P0's conclusion at full-trajectory scale, not just the endpoint.
